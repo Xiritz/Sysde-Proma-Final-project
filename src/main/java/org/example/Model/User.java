@@ -44,12 +44,4 @@ public class User {
     public void setRole(Role role) {
         this.role = role;
     }
-
-    public boolean login(String username, String password){
-        return true;
-    }
-
-    public void logout(){
-
-    }
 }

@@ -50,7 +50,13 @@ public class InventoryItem {
         return currentStock;
     }
 
-    public int removeStock(int amount){
+    public int removeStock(int amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Amount to remove must be positive.");
+        }
+        if (amount > currentStock) {
+            throw new IllegalArgumentException("Insufficient stock to remove " + amount + " items.");
+        }
         currentStock -= amount;
         return currentStock;
     }

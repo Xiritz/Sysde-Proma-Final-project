@@ -109,23 +109,51 @@ public class Transaction {
         this.laundryStatus = laundryStatus;
     }
 
-    public double calculateTotalCost(){
-        return 0;
+    public double calculateTotalCost() {
+        double pricePerLoad = switch (service) {
+            case WASH -> 50.0;
+            case DRY -> 50.0;
+            case FOLD -> 20.0;
+            case WASH_DRY -> 90.0;
+            case WASH_DRY_FOLD -> 110.0;
+        };
+        this.totalCost = pricePerLoad * loadCount;
+        updateBalance();
+        return this.totalCost;
     }
 
-    public void makePayment(){
-
+    public void makePayment(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Payment amount must be positive.");
+        }
+        this.amountPaid += amount;
+        updateBalance();
     }
 
-    public double calculateOutstandingBalance(){
-        return 0;
+    public double calculateOutstandingBalance() {
+        updateBalance();
+        return this.outstandingBalance;
     }
 
-    public boolean isFullyPaid(){
-        return outstandingBalance == 0;
+    private void updateBalance() {
+        this.outstandingBalance = this.totalCost - this.amountPaid;
     }
 
-    public void printReceipt(){
+    public boolean isFullyPaid() {
+        return outstandingBalance <= 0;
+    }
 
+    public void printReceipt() {
+        System.out.println("---------- RECEIPT ----------");
+        System.out.println("Transaction ID: " + transactionId);
+        System.out.println("Customer: " + customer.getCustomerName());
+        System.out.println("Service: " + service);
+        System.out.println("Loads: " + loadCount);
+        System.out.println("Weight: " + weightKg + " kg");
+        System.out.println("Total Cost: Php " + totalCost);
+        System.out.println("Amount Paid: Php " + amountPaid);
+        System.out.println("Outstanding Balance: Php " + outstandingBalance);
+        System.out.println("Status: " + laundryStatus);
+        System.out.println("-----------------------------");
     }
 }
