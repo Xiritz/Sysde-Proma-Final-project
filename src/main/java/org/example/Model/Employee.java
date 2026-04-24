@@ -1,9 +1,6 @@
 package org.example.Model;
 
 public class Employee extends User{
-    public Employee(){
-
-    }
 
     public Employee(String userId, String username, String password, Role role) {
         super(userId, username, password, role);
