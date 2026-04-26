@@ -1,9 +1,13 @@
 package org.example.Service;
 
+import org.example.Model.Role;
 import org.example.Model.Status;
 import org.example.Model.Transaction;
+import org.example.Model.User;
+import org.example.Model.Expense;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -11,14 +15,28 @@ import java.util.stream.Collectors;
 
 public class TransactionService {
     private List<Transaction> transactions;
+    private ExpenseService expenseService;
+    private int idCounter;
 
-    public TransactionService() {
+    public TransactionService(ExpenseService expenseService) {
         this.transactions = new ArrayList<>();
+        this.expenseService = expenseService;
+        this.idCounter = 1;
+    }
+
+    public String generateNextId() {
+        return String.format("T%03d", idCounter++);
     }
 
     public void createTransaction(Transaction transaction) {
         transaction.calculateTotalCost();
         transactions.add(transaction);
+    }
+
+    public List<Transaction> getPendingTransactions() {
+        return transactions.stream()
+                .filter(t -> !t.isFullyPaid())
+                .collect(Collectors.toList());
     }
 
     public void updateTransactionStatus(String transactionId, Status newStatus) {
@@ -41,17 +59,72 @@ public class TransactionService {
                 .collect(Collectors.toList());
     }
 
-    public void generateFinancialReport(Date start, Date end) {
-        List<Transaction> filtered = getTransactionsByDateRange(start, end);
-        double totalRevenue = filtered.stream().mapToDouble(Transaction::getAmountPaid).sum();
-        double totalOutstanding = filtered.stream().mapToDouble(Transaction::getOutstandingBalance).sum();
+    public void generateFinancialReport(User requester, String rangeType, Date customStart, Date customEnd) {
+        if (requester.getRole() != Role.ADMIN) {
+            System.out.println("Access Denied: You do not have permission to view financial reports.");
+            return;
+        }
 
-        System.out.println("---------- FINANCIAL REPORT ----------");
+        Date start, end;
+        Calendar cal = Calendar.getInstance();
+        end = cal.getTime();
+
+        switch (rangeType.toLowerCase()) {
+            case "daily":
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                start = cal.getTime();
+                break;
+            case "weekly":
+                cal.add(Calendar.DAY_OF_YEAR, -7);
+                start = cal.getTime();
+                break;
+            case "monthly":
+                cal.add(Calendar.MONTH, -1);
+                start = cal.getTime();
+                break;
+            case "quarterly":
+                cal.add(Calendar.MONTH, -3);
+                start = cal.getTime();
+                break;
+            case "yearly":
+                cal.add(Calendar.YEAR, -1);
+                start = cal.getTime();
+                break;
+            case "custom":
+                start = customStart;
+                end = customEnd;
+                break;
+            default:
+                System.out.println("Invalid range type.");
+                return;
+        }
+
+        List<Transaction> filteredTrans = getTransactionsByDateRange(start, end);
+        double totalRevenue = filteredTrans.stream().mapToDouble(Transaction::getAmountPaid).sum();
+        double totalOutstanding = filteredTrans.stream().mapToDouble(Transaction::getOutstandingBalance).sum();
+        
+        List<Expense> filteredExpenses = expenseService.getExpensesByDateRange(start, end);
+        double totalExpenses = filteredExpenses.stream().mapToDouble(Expense::getCost).sum();
+        
+        double netProfit = totalRevenue - totalExpenses;
+
+        System.out.println("---------- FINANCIAL REPORT (" + rangeType.toUpperCase() + ") ----------");
         System.out.println("Period: " + start + " to " + end);
-        System.out.println("Total Transactions: " + filtered.size());
+        System.out.println("Total Transactions: " + filteredTrans.size());
         System.out.println("Total Revenue Collected: Php " + totalRevenue);
         System.out.println("Total Outstanding Balance: Php " + totalOutstanding);
-        System.out.println("--------------------------------------");
+        System.out.println("Total Expenses Incurred: Php " + totalExpenses);
+        System.out.println("Net Profit: Php " + netProfit);
+        
+        if (!filteredExpenses.isEmpty()) {
+            System.out.println("\nExpense Breakdown:");
+            for (Expense e : filteredExpenses) {
+                System.out.printf("- %-20s: Php %.2f (%s)%n", e.getExpenseName(), e.getCost(), e.getDateIncurred());
+            }
+        }
+        System.out.println("-------------------------------------------------------");
     }
 
     public List<Transaction> getAllTransactions() {

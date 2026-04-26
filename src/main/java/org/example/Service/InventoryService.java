@@ -8,13 +8,29 @@ import java.util.stream.Collectors;
 
 public class InventoryService {
     private List<InventoryItem> inventoryItems;
+    private int idCounter;
 
     public InventoryService() {
         this.inventoryItems = new ArrayList<>();
+        this.idCounter = 1;
+    }
+
+    public String generateNextId() {
+        return String.format("I%03d", idCounter++);
     }
 
     public void addItem(InventoryItem item) {
-        inventoryItems.add(item);
+        // Check if item name already exists
+        Optional<InventoryItem> existing = inventoryItems.stream()
+                .filter(i -> i.getItemName().equalsIgnoreCase(item.getItemName()))
+                .findFirst();
+
+        if (existing.isPresent()) {
+            existing.get().addStock(item.getCurrentStock());
+            System.out.println("Item already exists. Added " + item.getCurrentStock() + " to " + item.getItemName());
+        } else {
+            inventoryItems.add(item);
+        }
     }
 
     public void consumeInventory(String itemId, int quantity) {
@@ -23,10 +39,24 @@ public class InventoryService {
                 .findFirst();
 
         if (itemOpt.isPresent()) {
-            itemOpt.get().removeStock(quantity);
+            InventoryItem item = itemOpt.get();
+            item.removeStock(quantity);
+            if (item.isStockLow()) {
+                System.out.println("\n[WARNING] " + item.getItemName() + " is running low! (Current stock: " + item.getCurrentStock() + ")");
+            }
         } else {
             throw new IllegalArgumentException("Inventory item not found: " + itemId);
         }
+    }
+
+    public void addStockToItem(String itemId, int quantity) {
+        inventoryItems.stream()
+                .filter(i -> i.getItemId().equals(itemId))
+                .findFirst()
+                .ifPresentOrElse(
+                        i -> i.addStock(quantity),
+                        () -> { throw new IllegalArgumentException("Item not found: " + itemId); }
+                );
     }
 
     public List<InventoryItem> getLowStockItems() {

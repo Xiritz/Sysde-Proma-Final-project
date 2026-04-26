@@ -7,9 +7,15 @@ import java.util.Optional;
 
 public class CustomerService {
     private List<Customer> customers;
+    private int idCounter;
 
     public CustomerService() {
         this.customers = new ArrayList<>();
+        this.idCounter = 1;
+    }
+
+    public String generateNextId() {
+        return String.format("C%03d", idCounter++);
     }
 
     public void registerCustomer(Customer customer) {

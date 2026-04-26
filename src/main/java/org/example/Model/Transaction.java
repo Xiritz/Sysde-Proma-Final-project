@@ -113,18 +113,21 @@ public class Transaction {
         double pricePerLoad = switch (service) {
             case WASH -> 50.0;
             case DRY -> 50.0;
-            case FOLD -> 20.0;
             case WASH_DRY -> 90.0;
             case WASH_DRY_FOLD -> 110.0;
         };
+        // Ensure loads are calculated based on weight if not manually set
+        if (this.loadCount == 0 && this.weightKg > 0) {
+            this.loadCount = (int) Math.ceil(this.weightKg / 8.0);
+        }
         this.totalCost = pricePerLoad * loadCount;
         updateBalance();
         return this.totalCost;
     }
 
     public void makePayment(double amount) {
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Payment amount must be positive.");
+        if (amount < 0) {
+            throw new IllegalArgumentException("Payment amount cannot be negative.");
         }
         this.amountPaid += amount;
         updateBalance();
@@ -148,11 +151,11 @@ public class Transaction {
         System.out.println("Transaction ID: " + transactionId);
         System.out.println("Customer: " + customer.getCustomerName());
         System.out.println("Service: " + service);
-        System.out.println("Loads: " + loadCount);
-        System.out.println("Weight: " + weightKg + " kg");
+        System.out.println("Total Weight: " + weightKg + " kg (" + loadCount + " loads)");
         System.out.println("Total Cost: Php " + totalCost);
         System.out.println("Amount Paid: Php " + amountPaid);
-        System.out.println("Outstanding Balance: Php " + outstandingBalance);
+        String balanceStr = isFullyPaid() ? "FULLY PAID" : "Php " + outstandingBalance;
+        System.out.println("Outstanding Balance: " + balanceStr);
         System.out.println("Status: " + laundryStatus);
         System.out.println("-----------------------------");
     }

@@ -9,11 +9,22 @@ import java.util.Optional;
 
 public class UserService {
     private List<User> users;
+    private int idCounter;
 
     public UserService() {
         this.users = new ArrayList<>();
-        // Pre-populate with an admin for testing
-        users.add(new User("U001", "admin", "admin123", Role.ADMIN));
+        this.idCounter = 1;
+        // Pre-populate with accounts for testing
+        addUserInternal(new User(generateNextId(), "admin", "admin", Role.ADMIN));
+        addUserInternal(new User(generateNextId(), "employee", "employee", Role.EMPLOYEE));
+    }
+
+    private void addUserInternal(User user) {
+        users.add(user);
+    }
+
+    public String generateNextId() {
+        return String.format("U%03d", idCounter++);
     }
 
     public Optional<User> authenticate(String username, String password) {
@@ -25,6 +36,9 @@ public class UserService {
     public void addUser(User requester, User newUser) {
         if (requester.getRole() != Role.ADMIN) {
             throw new SecurityException("Only admins can add users.");
+        }
+        if (users.stream().anyMatch(u -> u.getUsername().equalsIgnoreCase(newUser.getUsername()))) {
+            throw new IllegalArgumentException("Username '" + newUser.getUsername() + "' already exists.");
         }
         users.add(newUser);
     }
