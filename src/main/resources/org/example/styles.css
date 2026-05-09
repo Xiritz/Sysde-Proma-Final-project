@@ -1,0 +1,276 @@
+/* Qmar Laundry SaaS Aesthetic - Blue/White Theme */
+.root {
+    -qmar-primary: #2563eb;
+    -qmar-primary-dark: #1d4ed8;
+    -qmar-primary-light: #eff6ff;
+    -qmar-bg-light: #f8fafc;
+    -qmar-text-main: #1e293b;
+    -qmar-text-muted: #64748b;
+    -qmar-sidebar-bg: #ffffff;
+    -qmar-border-color: #e2e8f0;
+    -qmar-danger: #ef4444;
+    -qmar-success: #10b981;
+}
+
+/* Base Styles */
+.root {
+    -fx-background-color: -qmar-bg-light;
+    -fx-font-family: 'Segoe UI', system-ui, -apple-system;
+    -fx-text-fill: -qmar-text-main;
+}
+
+.label {
+    -fx-text-fill: -qmar-text-main;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    -fx-background-color: -qmar-sidebar-bg;
+    -fx-border-color: transparent -qmar-border-color transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar-title {
+    -fx-text-fill: -qmar-primary;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-padding: 10 0 30 0;
+}
+
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: -qmar-text-muted;
+    -fx-alignment: center-left;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 12 16;
+    -fx-background-radius: 0 10 10 0;
+    -fx-cursor: hand;
+    -fx-border-color: transparent transparent transparent transparent;
+    -fx-border-width: 0 0 0 4;
+}
+
+.nav-item:hover {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: -qmar-text-main;
+}
+
+.nav-item-active {
+    -fx-background-color: -qmar-primary-light;
+    -fx-text-fill: -qmar-primary;
+    -fx-border-color: transparent transparent transparent -qmar-primary;
+}
+
+/* Header Styling */
+.header-title {
+    -fx-text-fill: -qmar-text-main;
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+}
+
+.header-subtext {
+    -fx-text-fill: -qmar-text-muted;
+    -fx-font-size: 13px;
+}
+
+.search-bar {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 20;
+    -fx-padding: 8 15;
+    -fx-border-color: -qmar-border-color;
+    -fx-text-fill: -qmar-text-main;
+}
+
+/* Card System */
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);
+}
+
+.stat-label {
+    -fx-text-fill: -qmar-text-muted;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.stat-value {
+    -fx-text-fill: -qmar-text-main;
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+}
+
+/* Form Elements */
+.text-field, .text-area {
+    -fx-background-color: white;
+    -fx-border-color: -qmar-border-color;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+    -fx-text-fill: -qmar-text-main;
+}
+
+.text-field:focused, .text-area:focused {
+    -fx-border-color: -qmar-primary;
+}
+
+.combo-box {
+    -fx-background-color: white;
+    -fx-border-color: -qmar-border-color;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 4 8;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: -qmar-text-main;
+}
+
+.spinner {
+    -fx-background-color: white;
+    -fx-border-color: -qmar-border-color;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.spinner .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* Buttons */
+.btn-new-order {
+    -fx-background-color: -qmar-primary;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 10;
+    -fx-padding: 8 20;
+    -fx-cursor: hand;
+}
+
+.btn-new-order:hover {
+    -fx-background-color: -qmar-primary-dark;
+}
+
+.primary-button {
+    -fx-background-color: -qmar-primary;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: -qmar-primary-dark;
+}
+
+.success-button {
+    -fx-background-color: -qmar-success;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+.success-button:hover {
+    -fx-background-color: #059669;
+}
+
+.btn-receive {
+    -fx-background-color: white;
+    -fx-border-color: -qmar-border-color;
+    -fx-text-fill: -qmar-text-main;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+.btn-receive:hover {
+    -fx-background-color: #f8fafc;
+}
+
+.logout-btn-new {
+    -fx-background-color: white;
+    -fx-border-color: -qmar-border-color;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: -qmar-text-main;
+    -fx-font-weight: 600;
+    -fx-padding: 10 16;
+    -fx-cursor: hand;
+}
+
+.logout-btn-new:hover {
+    -fx-background-color: #fff1f2;
+    -fx-border-color: #fecaca;
+    -fx-text-fill: -qmar-danger;
+}
+
+/* Table Enhancements */
+.table-view {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: -qmar-border-color;
+    -fx-border-radius: 10;
+    -fx-padding: 5;
+}
+
+.table-view .column-header, .table-view .column-header-background .filler {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: transparent transparent -qmar-border-color transparent;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -qmar-text-muted;
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+}
+
+.table-row-cell:filled:hover {
+    -fx-background-color: #f8fafc;
+}
+
+.table-row-cell:filled:selected {
+    -fx-background-color: -qmar-primary-light !important;
+}
+
+.table-row-cell:filled:selected .table-cell {
+    -fx-text-fill: -qmar-primary !important;
+    -fx-font-weight: bold;
+}
+
+/* Validation Styles */
+.error-field {
+    -fx-border-color: -qmar-danger !important;
+    -fx-border-width: 1px !important;
+}
+
+.error-message {
+    -fx-text-fill: -qmar-danger;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 0 0 0;
+}
+
+/* Badges and Pills */
+.badge {
+    -fx-padding: 4 10;
+    -fx-background-radius: 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.status-pending { -fx-background-color: #f59e0b; }
+.status-processing { -fx-background-color: -qmar-primary; }
+.status-completed { -fx-background-color: -qmar-success; }

@@ -15,12 +15,11 @@ public class Main {
     private static CustomerService customerService = new CustomerService();
     private static InventoryService inventoryService = new InventoryService();
     private static ExpenseService expenseService = new ExpenseService();
-    private static TransactionService transactionService = new TransactionService(expenseService);
+    private static TransactionService transactionService = new TransactionService(expenseService, inventoryService);
 
     public static void main(String[] args) {
-        // Pre-populate some inventory
-        inventoryService.addItem(new InventoryItem(inventoryService.generateNextId(), "Detergent", 50, 10));
-        inventoryService.addItem(new InventoryItem(inventoryService.generateNextId(), "Fabric Softener", 20, 5));
+        // Pre-populate with placeholder data
+        org.example.Util.DataLoader.loadPlaceholderData(customerService, inventoryService, expenseService, transactionService);
 
         while (true) {
             System.out.println("\n========================================");
@@ -232,15 +231,33 @@ public class Main {
 
         System.out.print("Total Weight (kg): ");
         double weight = Double.parseDouble(scanner.nextLine());
-        
-        Transaction t = new Transaction(transactionService.generateNextId(), selectedCustomer, service, new Date(), weight, 0, 0, 0, 0, Status.PENDING);
+
+        System.out.println("Select Payment Method:");
+        InitialPaymentMethod[] methods = InitialPaymentMethod.values();
+        for (int i = 0; i < methods.length; i++) {
+            System.out.println((i + 1) + ". " + methods[i]);
+        }
+        int mIdx = Integer.parseInt(scanner.nextLine());
+        InitialPaymentMethod method = methods[mIdx - 1];
+
+        String creator = loginService.getCurrentUser() != null ? loginService.getCurrentUser().getUsername() : "Unknown";
+        Transaction t = new Transaction(transactionService.generateNextId(), selectedCustomer, service, new Date(), weight, 0, 0, 0, 0, Status.PENDING, method, creator);
         t.calculateTotalCost();
-        
+
         System.out.println("Total Cost: Php " + t.getTotalCost() + " (" + t.getLoadCount() + " loads)");
-        System.out.print("Enter Down Payment amount (Enter 0 if none): ");
-        double dp = Double.parseDouble(scanner.nextLine());
-        t.makePayment(dp);
-        
+
+        double dp = 0;
+        if (method == InitialPaymentMethod.DOWN_PAYMENT) {
+            System.out.print("Enter Down Payment amount: ");
+            dp = Double.parseDouble(scanner.nextLine());
+        } else if (method == InitialPaymentMethod.FULL_PAYMENT) {
+            dp = t.getTotalCost();
+        }
+
+        if (dp > 0) {
+            t.makePayment(dp);
+        }
+
         transactionService.createTransaction(t);
         System.out.println("Order created successfully!");
         t.printReceipt();
@@ -249,7 +266,7 @@ public class Main {
     private static void receivePayment() {
         List<Transaction> pending = transactionService.getPendingTransactions();
         if (pending.isEmpty()) {
-            System.out.println("No pending payments.");
+            System.out.println("No pending payments (all transactions are fully paid).");
             return;
         }
 
@@ -287,7 +304,7 @@ public class Main {
         if (choice == 0) return;
 
         Transaction selected = all.get(choice - 1);
-        System.out.println("Select New Status: (1. PENDING, 2. PROCESSING, 3. COMPLETED)");
+        System.out.println("Select New Status: (1. PENDING, 2. PROCESSING, 3. READY_FOR_DELIVERY, 4. DELIVERED)");
         int sIdx = Integer.parseInt(scanner.nextLine());
         selected.setLaundryStatus(Status.values()[sIdx - 1]);
         System.out.println("Status updated to " + selected.getLaundryStatus());
@@ -303,7 +320,7 @@ public class Main {
         System.out.println("\n--- Transaction History ---");
         transactionService.getAllTransactions().forEach(t -> {
             String balStr = t.isFullyPaid() ? "FULLY PAID" : "Bal: Php " + t.getOutstandingBalance();
-            System.out.println(t.getTransactionId() + " | " + t.getCustomer().getCustomerName() + " | " + t.getLaundryStatus() + " | " + balStr);
+            System.out.println(t.getTransactionId() + " | " + t.getCustomer().getCustomerName() + " | " + t.getWeightKg() + "kg (" + t.getLoadCount() + " loads) | " + t.getLaundryStatus() + " | " + balStr);
         });
     }
 

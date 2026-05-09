@@ -13,10 +13,12 @@ public class Transaction {
     private double amountPaid;
     private double outstandingBalance;
     private Status laundryStatus;
+    private InitialPaymentMethod initialPaymentMethod; // "Down Payment", "Pay Later", "Full Payment"
+    private String createdBy;
 
     public Transaction(String transactionId, Customer customer, Service service, Date datePlaced, double weightKg,
                        int loadCount, double totalCost, double amountPaid, double outstandingBalance,
-                       Status laundryStatus) {
+                       Status laundryStatus, InitialPaymentMethod initialPaymentMethod, String createdBy) {
         this.transactionId = transactionId;
         this.customer = customer;
         this.service = service;
@@ -27,7 +29,18 @@ public class Transaction {
         this.amountPaid = amountPaid;
         this.outstandingBalance = outstandingBalance;
         this.laundryStatus = laundryStatus;
+        this.initialPaymentMethod = initialPaymentMethod;
+        this.createdBy = createdBy;
     }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
 
     public String getTransactionId() {
         return transactionId;
@@ -97,6 +110,10 @@ public class Transaction {
         return outstandingBalance;
     }
 
+    public double getBalance() {
+        return outstandingBalance;
+    }
+
     public void setOutstandingBalance(double outstandingBalance) {
         this.outstandingBalance = outstandingBalance;
     }
@@ -109,14 +126,17 @@ public class Transaction {
         this.laundryStatus = laundryStatus;
     }
 
+    public InitialPaymentMethod getInitialPaymentMethod() {
+        return initialPaymentMethod;
+    }
+
+    public void setInitialPaymentMethod(InitialPaymentMethod initialPaymentMethod) {
+        this.initialPaymentMethod = initialPaymentMethod;
+    }
+
     public double calculateTotalCost() {
-        double pricePerLoad = switch (service) {
-            case WASH -> 50.0;
-            case DRY -> 50.0;
-            case WASH_DRY -> 90.0;
-            case WASH_DRY_FOLD -> 110.0;
-        };
-        // Ensure loads are calculated based on weight if not manually set
+        double pricePerLoad = 250.0;
+        // Auto-compute loads if not set: Use 8kg soft cap as standard
         if (this.loadCount == 0 && this.weightKg > 0) {
             this.loadCount = (int) Math.ceil(this.weightKg / 8.0);
         }
@@ -128,6 +148,9 @@ public class Transaction {
     public void makePayment(double amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Payment amount cannot be negative.");
+        }
+        if (amount > this.outstandingBalance && this.totalCost > 0) {
+            throw new IllegalArgumentException(String.format("Payment (Php %.2f) exceeds the outstanding balance (Php %.2f).", amount, this.outstandingBalance));
         }
         this.amountPaid += amount;
         updateBalance();

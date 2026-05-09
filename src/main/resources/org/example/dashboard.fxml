@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane prefHeight="800.0" prefWidth="1200.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.Controller.DashboardController">
+    <left>
+        <VBox fx:id="sidebar" prefWidth="240.0" spacing="5.0" styleClass="sidebar">
+            <padding>
+                <Insets bottom="20.0" left="0.0" right="15.0" top="20.0" />
+            </padding>
+            <Label styleClass="sidebar-title" text="Qmar Laundry" translateX="15.0" />
+            
+            <Button fx:id="homeBtn" maxWidth="Infinity" onAction="#handleHome" styleClass="nav-item, nav-item-active" text="🏠  Dashboard" />
+            <Button fx:id="transBtn" maxWidth="Infinity" onAction="#handleTransactions" styleClass="nav-item" text="📝  Transactions" />
+            <Button fx:id="custBtn" maxWidth="Infinity" onAction="#handleCustomers" styleClass="nav-item" text="👥  Customers" />
+            <Button fx:id="invBtn" maxWidth="Infinity" onAction="#handleInventory" styleClass="nav-item" text="📦  Inventory" />
+            <Button fx:id="staffBtn" maxWidth="Infinity" onAction="#handleStaff" styleClass="nav-item" text="👤  Staff Management" />
+            <Button fx:id="reportsBtn" maxWidth="Infinity" onAction="#handleReports" styleClass="nav-item" text="📊  Financial Reports" />
+            
+            <Region VBox.vgrow="ALWAYS" />
+            
+            <VBox alignment="CENTER" spacing="10">
+                <padding><Insets left="15" /></padding>
+                <Button maxWidth="Infinity" onAction="#handleLogout" styleClass="logout-btn-new" text="🚪  Logout" />
+            </VBox>
+        </VBox>
+    </left>
+    
+    <center>
+        <VBox>
+            <!-- Top Header -->
+            <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-padding: 15 30;">
+                <VBox>
+                    <Label styleClass="header-title" text="Dashboard" />
+                    <Label styleClass="header-subtext" text="Overview of your laundry operations" />
+                </VBox>
+                
+                <Region HBox.hgrow="ALWAYS" />
+                
+                <TextField prefWidth="300.0" promptText="Search everything..." styleClass="search-bar" />
+                
+                <Region HBox.hgrow="ALWAYS" />
+                
+                <HBox alignment="CENTER_RIGHT" spacing="15.0">
+                    <Button onAction="#handleTransactions" styleClass="btn-new-order" text="+ New Order" />
+                    
+                    <StackPane fx:id="notificationBell" onMouseClicked="#showLowStockMenu" style="-fx-cursor: hand;">
+                        <Label style="-fx-font-size: 20px;" text="🔔" />
+                        <Label fx:id="notificationBadge" styleClass="bell-badge" text="!" StackPane.alignment="TOP_RIGHT">
+                            <StackPane.margin><Insets right="-2" top="-2" /></StackPane.margin>
+                        </Label>
+                    </StackPane>
+                    
+                    <Separator orientation="VERTICAL" prefHeight="30.0" />
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <StackPane styleClass="avatar-circle">
+                            <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold;" text="JS" />
+                        </StackPane>
+                        <VBox alignment="CENTER_LEFT">
+                            <Label fx:id="userLabel" style="-fx-font-weight: bold; -fx-text-fill: #1e293b;" text="Jane Smith" />
+                            <Label fx:id="roleLabel" style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="Admin" />
+                        </VBox>
+                    </HBox>
+                </HBox>
+            </HBox>
+            
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                <StackPane fx:id="contentArea">
+                    <padding>
+                        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+                    </padding>
+                </StackPane>
+            </ScrollPane>
+        </VBox>
+    </center>
+</BorderPane>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="25.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.Controller.TransactionController">
+    
+    <HBox spacing="20.0" VBox.vgrow="ALWAYS">
+        <!-- New Order Form -->
+        <VBox spacing="20.0" styleClass="card" prefWidth="350.0">
+            <Label text="New Order" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+            
+            <VBox spacing="8.0">
+                <Label text="Select Customer" styleClass="stat-label" />
+                <HBox spacing="10.0" alignment="TOP_LEFT" fillHeight="false">
+                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                        <ComboBox fx:id="customerComboBox" promptText="Search customer..." maxWidth="Infinity" editable="true" />
+                    </VBox>
+                    <Button text="+" onAction="#handleQuickAddCustomer" styleClass="primary-button" style="-fx-padding: 8 15;" />
+                </HBox>
+            </VBox>
+            
+            <VBox spacing="8.0">
+                <Label text="Select Service" styleClass="stat-label" />
+                <ComboBox fx:id="serviceComboBox" promptText="Choose service" maxWidth="Infinity" />
+            </VBox>
+            
+            <HBox spacing="15.0">
+                <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                    <Label text="Weight (kg)" styleClass="stat-label" />
+                    <TextField fx:id="weightField" promptText="0.0" />
+                </VBox>
+                <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                    <Label text="Loads" styleClass="stat-label" />
+                    <Spinner fx:id="loadsSpinner" maxWidth="Infinity" editable="false" />
+                </VBox>
+            </HBox>
+            
+            <VBox spacing="8.0">
+                <Label text="Payment Method" styleClass="stat-label" />
+                <ComboBox fx:id="paymentMethodComboBox" promptText="Select method" maxWidth="Infinity" />
+            </VBox>
+            
+            <VBox spacing="8.0" fx:id="paymentFieldContainer">
+                <Label text="Payment Amount" styleClass="stat-label" />
+                <TextField fx:id="paymentField" promptText="0.0" />
+            </VBox>
+
+            <HBox spacing="10.0" alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-padding: 15; -fx-background-radius: 10;">
+                <Label text="Total Amount:" style="-fx-font-weight: bold; -fx-text-fill: #64748b;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="totalAmountLabel" text="Php 0.00" style="-fx-text-fill: -qmar-primary; -fx-font-size: 18px; -fx-font-weight: 800;" />
+            </HBox>
+            
+            <VBox spacing="10.0">
+                <Button text="Create Order" onAction="#handleCreateOrder" maxWidth="Infinity" styleClass="success-button" />
+                <Button text="Clear Fields" onAction="#handleClear" maxWidth="Infinity" styleClass="btn-receive" />
+            </VBox>
+        </VBox>
+
+        <!-- Transaction History -->
+        <VBox spacing="15.0" HBox.hgrow="ALWAYS" styleClass="card">
+            <HBox alignment="CENTER_LEFT" spacing="15.0">
+                <VBox>
+                    <Label text="Transaction History" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+                    <Label text="Manage and track all customer orders" styleClass="header-subtext" />
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox spacing="10.0">
+                    <ComboBox fx:id="statusFilter" promptText="Filter by Status" prefWidth="180.0" />
+                    <TextField fx:id="searchField" promptText="Search customer or ID..." prefWidth="250.0" styleClass="search-bar" />
+                </HBox>
+            </HBox>
+            
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                <VBox fx:id="cardsContainer" spacing="15.0" style="-fx-padding: 5;">
+                    <!-- Cards will be injected here -->
+                </VBox>
+            </ScrollPane>
+        </VBox>
+    </HBox>
+</VBox>

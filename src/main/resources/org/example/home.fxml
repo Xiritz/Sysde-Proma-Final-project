@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="25.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.Controller.HomeController">
+    
+    <!-- ROW 1: Functional Stat Cards -->
+    <HBox spacing="15.0">
+        <VBox HBox.hgrow="ALWAYS" spacing="10" styleClass="card">
+            <Label text="Unpaid Transactions" styleClass="stat-label" />
+            <Label fx:id="unpaidOrdersLabel" text="0" styleClass="stat-value" />
+        </VBox>
+
+        <VBox HBox.hgrow="ALWAYS" spacing="10" styleClass="card, card-primary">
+            <Label text="Active Transactions" styleClass="stat-label" />
+            <Label fx:id="activeOrdersLabel" text="0" styleClass="stat-value" />
+        </VBox>
+
+        <VBox HBox.hgrow="ALWAYS" spacing="10" styleClass="card">
+            <Label text="Low Stock Items" styleClass="stat-label" />
+            <Label fx:id="lowStockLabel" text="0" styleClass="stat-value" />
+        </VBox>
+
+        <VBox HBox.hgrow="ALWAYS" spacing="10" styleClass="card">
+            <Label fx:id="revenueTitle" text="Today's Revenue" styleClass="stat-label" />
+            <Label fx:id="revenueLabel" text="Php 0.00" styleClass="stat-value" />
+        </VBox>
+    </HBox>
+
+    <!-- ROW 2: Primary Content Area -->
+    <HBox spacing="20.0" VBox.vgrow="ALWAYS">
+        
+        <!-- Main Content: All Active Orders -->
+        <VBox spacing="15.0" styleClass="card" HBox.hgrow="ALWAYS">
+            <Label text="All Active Orders" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                <VBox fx:id="cardsContainer" spacing="10.0" style="-fx-padding: 5;">
+                    <!-- Cards will be injected here -->
+                </VBox>
+            </ScrollPane>
+        </VBox>
+
+        <!-- Sidebar: Ready for Delivery -->
+        <VBox spacing="15.0" styleClass="card" prefWidth="320.0">
+            <Label text="Ready for Delivery" style="-fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;">
+                <VBox fx:id="readyDeliveryContainer" spacing="1">
+                    <!-- Dynamic items will be injected here -->
+                </VBox>
+            </ScrollPane>
+            
+            <Region VBox.vgrow="ALWAYS" />
+            
+            <Button text="View All Ready Orders" maxWidth="Infinity" onAction="#handleViewAllReady" styleClass="btn-new-order" style="-fx-font-size: 11;" />
+        </VBox>
+    </HBox>
+</VBox>

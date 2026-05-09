@@ -5,6 +5,7 @@ import org.example.Model.Status;
 import org.example.Model.Transaction;
 import org.example.Model.User;
 import org.example.Model.Expense;
+import org.example.Model.InventoryItem;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -16,11 +17,13 @@ import java.util.stream.Collectors;
 public class TransactionService {
     private List<Transaction> transactions;
     private ExpenseService expenseService;
+    private InventoryService inventoryService;
     private int idCounter;
 
-    public TransactionService(ExpenseService expenseService) {
+    public TransactionService(ExpenseService expenseService, InventoryService inventoryService) {
         this.transactions = new ArrayList<>();
         this.expenseService = expenseService;
+        this.inventoryService = inventoryService;
         this.idCounter = 1;
     }
 
@@ -31,6 +34,40 @@ public class TransactionService {
     public void createTransaction(Transaction transaction) {
         transaction.calculateTotalCost();
         transactions.add(transaction);
+        
+        // Auto-consume supplies
+        consumeSupplies();
+    }
+
+    private void consumeSupplies() {
+        if (inventoryService == null) return;
+
+        List<InventoryItem> allItems = inventoryService.getAllItems();
+        
+        // Find Liquid Detergent and Fabric Softener by name
+        Optional<InventoryItem> detergent = allItems.stream()
+                .filter(i -> i.getItemName().toLowerCase().contains("detergent") && i.getItemName().toLowerCase().contains("liquid"))
+                .findFirst();
+        
+        Optional<InventoryItem> softener = allItems.stream()
+                .filter(i -> i.getItemName().toLowerCase().contains("fabric") && i.getItemName().toLowerCase().contains("softener"))
+                .findFirst();
+
+        detergent.ifPresent(item -> {
+            try {
+                inventoryService.consumeInventory(item.getItemId(), 1);
+            } catch (Exception e) {
+                System.err.println("Could not consume detergent: " + e.getMessage());
+            }
+        });
+
+        softener.ifPresent(item -> {
+            try {
+                inventoryService.consumeInventory(item.getItemId(), 1);
+            } catch (Exception e) {
+                System.err.println("Could not consume softener: " + e.getMessage());
+            }
+        });
     }
 
     public List<Transaction> getPendingTransactions() {
@@ -41,14 +78,14 @@ public class TransactionService {
 
     public void updateTransactionStatus(String transactionId, Status newStatus) {
         transactions.stream()
-                .filter(t -> t.getTransactionId().equals(transactionId))
+                .filter(t -> t.getTransactionId().trim().equalsIgnoreCase(transactionId.trim()))
                 .findFirst()
                 .ifPresent(t -> t.setLaundryStatus(newStatus));
     }
 
     public void receivePayment(String transactionId, double amount) {
         transactions.stream()
-                .filter(t -> t.getTransactionId().equals(transactionId))
+                .filter(t -> t.getTransactionId().trim().equalsIgnoreCase(transactionId.trim()))
                 .findFirst()
                 .ifPresent(t -> t.makePayment(amount));
     }

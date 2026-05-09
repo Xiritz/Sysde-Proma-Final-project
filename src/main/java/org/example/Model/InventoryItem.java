@@ -62,9 +62,6 @@ public class InventoryItem {
     }
 
     public boolean isStockLow(){
-        if(currentStock < lowStockThreshold){
-            return true;
-        }
-        return false;
+        return currentStock <= lowStockThreshold;
     }
 }
