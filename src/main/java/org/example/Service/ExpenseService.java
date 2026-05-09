@@ -73,4 +73,11 @@ public class ExpenseService {
                 .mapToDouble(Expense::getCost)
                 .sum();
     }
+
+    public void removeExpense(org.example.Model.User requester, String expenseId) {
+        if (requester.getRole() != org.example.Model.Role.ADMIN && requester.getRole() != org.example.Model.Role.OWNER) {
+            throw new SecurityException("Only admins or owners can remove expenses.");
+        }
+        expenses.removeIf(e -> e.getExpenseId().equals(expenseId));
+    }
 }

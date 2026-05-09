@@ -69,6 +69,13 @@ public class InventoryService {
         return new ArrayList<>(inventoryItems);
     }
 
+    public void removeInventoryItem(org.example.Model.User requester, String itemId) {
+        if (requester.getRole() != org.example.Model.Role.ADMIN && requester.getRole() != org.example.Model.Role.OWNER) {
+            throw new SecurityException("Only admins or owners can remove inventory items.");
+        }
+        inventoryItems.removeIf(i -> i.getItemId().equals(itemId));
+    }
+
     public void generateInventoryReport() {
         System.out.println("---------- INVENTORY REPORT ----------");
         for (InventoryItem item : inventoryItems) {

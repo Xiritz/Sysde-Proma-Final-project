@@ -300,7 +300,26 @@ public class TransactionController {
         Label creatorLabel = new Label("Transaction placed by: " + (t.getCreatedBy() != null ? t.getCreatedBy() : "Unknown"));
         creatorLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: -qmar-text-muted; -fx-font-style: italic;");
 
-        card.getChildren().addAll(header, body, footer, creatorLabel);
+        javafx.scene.layout.HBox removeFooter = new javafx.scene.layout.HBox();
+        removeFooter.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+
+        org.example.Model.User currentUser = App.loginService.getCurrentUser();
+        if (currentUser != null && (currentUser.getRole() == org.example.Model.Role.ADMIN || currentUser.getRole() == org.example.Model.Role.OWNER)) {
+            Button removeBtn = new Button("Remove");
+            removeBtn.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: -qmar-danger; -fx-border-color: -qmar-danger; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
+            removeBtn.setOnAction(e -> {
+                try {
+                    App.transactionService.removeTransaction(currentUser, t.getTransactionId());
+                    refreshData();
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Transaction removed.");
+                } catch (Exception ex) {
+                    showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+                }
+            });
+            removeFooter.getChildren().add(removeBtn);
+        }
+
+        card.getChildren().addAll(header, body, footer, creatorLabel, removeFooter);
         return card;
     }
 

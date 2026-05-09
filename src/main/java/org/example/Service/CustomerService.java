@@ -40,4 +40,11 @@ public class CustomerService {
             }
         }
     }
+
+    public void removeCustomer(org.example.Model.User requester, String customerId) {
+        if (requester.getRole() != org.example.Model.Role.ADMIN && requester.getRole() != org.example.Model.Role.OWNER) {
+            throw new SecurityException("Only admins or owners can remove customers.");
+        }
+        customers.removeIf(c -> c.getCustomerId().equals(customerId));
+    }
 }

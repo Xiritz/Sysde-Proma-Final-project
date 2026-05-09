@@ -34,8 +34,8 @@ public class UserService {
     }
 
     public void addUser(User requester, User newUser) {
-        if (requester.getRole() != Role.ADMIN) {
-            throw new SecurityException("Only admins can add users.");
+        if (requester.getRole() != Role.ADMIN && requester.getRole() != Role.OWNER) {
+            throw new SecurityException("Only admins or owners can add users.");
         }
         if (users.stream().anyMatch(u -> u.getUsername().equalsIgnoreCase(newUser.getUsername()))) {
             throw new IllegalArgumentException("Username '" + newUser.getUsername() + "' already exists.");
@@ -44,8 +44,8 @@ public class UserService {
     }
 
     public void removeUser(User requester, String userId) {
-        if (requester.getRole() != Role.ADMIN) {
-            throw new SecurityException("Only admins can remove users.");
+        if (requester.getRole() != Role.ADMIN && requester.getRole() != Role.OWNER) {
+            throw new SecurityException("Only admins or owners can remove users.");
         }
         users.removeIf(u -> u.getUserId().equals(userId));
     }

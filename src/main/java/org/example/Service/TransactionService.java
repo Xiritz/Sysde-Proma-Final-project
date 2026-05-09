@@ -167,4 +167,11 @@ public class TransactionService {
     public List<Transaction> getAllTransactions() {
         return new ArrayList<>(transactions);
     }
+
+    public void removeTransaction(User requester, String transactionId) {
+        if (requester.getRole() != Role.ADMIN && requester.getRole() != Role.OWNER) {
+            throw new SecurityException("Only admins or owners can remove transactions.");
+        }
+        transactions.removeIf(t -> t.getTransactionId().equals(transactionId));
+    }
 }

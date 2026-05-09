@@ -114,8 +114,35 @@ public class InventoryController {
         Label idLabel = new Label("ID: " + item.getItemId());
         idLabel.setStyle("-fx-text-fill: -qmar-text-muted; -fx-font-size: 11px;");
 
-        card.getChildren().addAll(header, body, idLabel);
+        javafx.scene.layout.HBox footer = new javafx.scene.layout.HBox();
+        footer.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+
+        org.example.Model.User currentUser = App.loginService.getCurrentUser();
+        if (currentUser != null && (currentUser.getRole() == org.example.Model.Role.ADMIN || currentUser.getRole() == org.example.Model.Role.OWNER)) {
+            Button removeBtn = new Button("Remove");
+            removeBtn.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: -qmar-danger; -fx-border-color: -qmar-danger; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
+            removeBtn.setOnAction(e -> {
+                try {
+                    App.inventoryService.removeInventoryItem(currentUser, item.getItemId());
+                    refreshData();
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Item removed.");
+                } catch (Exception ex) {
+                    showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+                }
+            });
+            footer.getChildren().add(removeBtn);
+        }
+
+        card.getChildren().addAll(header, body, idLabel, footer);
         return card;
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     private void markFieldInvalid(Control field, boolean isInvalid) {
@@ -260,11 +287,4 @@ public class InventoryController {
         }
     }
 
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
 }

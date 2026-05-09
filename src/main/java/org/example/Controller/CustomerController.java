@@ -71,9 +71,29 @@ public class CustomerController {
         addressLabel.setStyle("-fx-text-fill: -qmar-text-muted;");
         addressLabel.setWrapText(true);
 
-        card.getChildren().addAll(header, contactLabel, addressLabel);
+        javafx.scene.layout.HBox footer = new javafx.scene.layout.HBox();
+        footer.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+
+        org.example.Model.User currentUser = App.loginService.getCurrentUser();
+        if (currentUser != null && (currentUser.getRole() == org.example.Model.Role.ADMIN || currentUser.getRole() == org.example.Model.Role.OWNER)) {
+            Button removeBtn = new Button("Remove");
+            removeBtn.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: -qmar-danger; -fx-border-color: -qmar-danger; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
+            removeBtn.setOnAction(e -> {
+                try {
+                    App.customerService.removeCustomer(currentUser, c.getCustomerId());
+                    refreshTable();
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Customer removed.");
+                } catch (Exception ex) {
+                    showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+                }
+            });
+            footer.getChildren().add(removeBtn);
+        }
+
+        card.getChildren().addAll(header, contactLabel, addressLabel, footer);
         return card;
     }
+
 
     private void markFieldInvalid(Control field, boolean isInvalid) {
         Pane container = (Pane) field.getParent();
@@ -133,11 +153,11 @@ public class CustomerController {
         markFieldInvalid(contactField, false);
     }
 
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
-        alert.setContentText(message);
+        alert.setContentText(content);
         alert.showAndWait();
     }
 }

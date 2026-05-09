@@ -2,7 +2,7 @@ package org.example.Model;
 
 import java.util.Date;
 
-public class Expense {
+public class    Expense {
     private String expenseId;
     private String expenseName;
     private double cost;
