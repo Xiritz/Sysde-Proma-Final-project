@@ -31,13 +31,17 @@
                 <ComboBox fx:id="roleComboBox" promptText="Select Role" maxWidth="Infinity" />
             </VBox>
             
-            <Button text="Add Staff Member" onAction="#handleAddStaff" maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
-            <Button text="Clear" onAction="#handleClear" maxWidth="Infinity" />
+            <Button text="Add Staff Member" onAction="#handleAddStaff" maxWidth="Infinity" styleClass="success-button" />
+            <Button text="Clear" onAction="#handleClear" maxWidth="Infinity" styleClass="secondary-button" />
         </VBox>
 
         <!-- Staff List -->
         <VBox spacing="10.0" HBox.hgrow="ALWAYS" styleClass="card">
-            <Label text="Staff List" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label text="Staff List" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <TextField fx:id="searchField" promptText="Search staff..." prefWidth="200.0" />
+            </HBox>
             <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
                 <VBox fx:id="cardsContainer" spacing="10.0" style="-fx-padding: 5;">
                     <!-- Cards will be injected here -->

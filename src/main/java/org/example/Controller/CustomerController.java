@@ -15,32 +15,55 @@ public class CustomerController {
     @FXML private TextField nameField;
     @FXML private TextArea addressField;
     @FXML private TextField contactField;
+    @FXML private TextField searchField;
 
     @FXML private VBox cardsContainer;
 
     private ObservableList<Customer> customerList;
+    private javafx.collections.transformation.FilteredList<Customer> filteredData;
 
     @FXML
     public void initialize() {
         refreshTable();
+        
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(customer -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                
+                String lowerCaseFilter = newValue.toLowerCase();
+                
+                if (customer.getCustomerName().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (customer.getContactNumber().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (customer.getCustomerId().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                }
+                return false;
+            });
+            renderCards();
+        });
     }
 
     private void refreshTable() {
         customerList = FXCollections.observableArrayList(App.customerService.getAllCustomers());
+        filteredData = new javafx.collections.transformation.FilteredList<>(customerList, p -> true);
         renderCards();
     }
 
     private void renderCards() {
         cardsContainer.getChildren().clear();
         
-        if (customerList.isEmpty()) {
-            Label noData = new Label("No customers found.");
+        if (filteredData.isEmpty()) {
+            Label noData = new Label(searchField.getText().isEmpty() ? "No customers found." : "No customers match your search.");
             noData.setStyle("-fx-text-fill: -qmar-text-muted; -fx-padding: 20;");
             cardsContainer.getChildren().add(noData);
             return;
         }
 
-        for (Customer c : customerList) {
+        for (Customer c : filteredData) {
             cardsContainer.getChildren().add(createCustomerCard(c));
         }
     }

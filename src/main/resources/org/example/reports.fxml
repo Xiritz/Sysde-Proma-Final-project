@@ -18,6 +18,7 @@
         <DatePicker fx:id="startDatePicker" promptText="Start Date" disable="true" />
         <DatePicker fx:id="endDatePicker" promptText="End Date" disable="true" />
         <Button text="Generate Report" onAction="#handleGenerateReport" styleClass="primary-button" />
+        <Button text="Export to PDF" onAction="#handleExportPDF" styleClass="secondary-button" />
     </HBox>
 
     <!-- Summary Cards -->
@@ -53,7 +54,11 @@
 
         <!-- Expense Breakdown -->
         <VBox spacing="10.0" HBox.hgrow="ALWAYS" styleClass="card">
-            <Label text="Expense Breakdown" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label text="Expense Breakdown" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <TextField fx:id="searchField" promptText="Search expenses..." prefWidth="200.0" />
+            </HBox>
             <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
                 <VBox fx:id="cardsContainer" spacing="10.0" style="-fx-padding: 5;">
                     <!-- Cards will be injected here -->

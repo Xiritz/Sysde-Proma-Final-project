@@ -17,33 +17,56 @@ public class StaffController {
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private ComboBox<Role> roleComboBox;
+    @FXML private TextField searchField;
 
     @FXML private VBox cardsContainer;
 
     private ObservableList<User> staffList;
+    private javafx.collections.transformation.FilteredList<User> filteredData;
 
     @FXML
     public void initialize() {
         roleComboBox.setItems(FXCollections.observableArrayList(Role.values()));
         refreshData();
+
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(user -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                
+                String lowerCaseFilter = newValue.toLowerCase();
+                
+                if (user.getUsername().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (user.getUserId().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (user.getRole().toString().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                }
+                return false;
+            });
+            renderCards();
+        });
     }
 
     private void refreshData() {
         staffList = FXCollections.observableArrayList(App.userService.getAllUsers());
+        filteredData = new javafx.collections.transformation.FilteredList<>(staffList, p -> true);
         renderCards();
     }
 
     private void renderCards() {
         cardsContainer.getChildren().clear();
         
-        if (staffList.isEmpty()) {
-            Label noData = new Label("No staff members found.");
+        if (filteredData.isEmpty()) {
+            Label noData = new Label(searchField.getText().isEmpty() ? "No staff members found." : "No staff match your search.");
             noData.setStyle("-fx-text-fill: -qmar-text-muted; -fx-padding: 20;");
             cardsContainer.getChildren().add(noData);
             return;
         }
 
-        for (User u : staffList) {
+        for (User u : filteredData) {
             cardsContainer.getChildren().add(createStaffCard(u));
         }
     }

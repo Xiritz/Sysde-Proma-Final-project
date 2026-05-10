@@ -179,6 +179,19 @@
     -fx-background-color: #059669;
 }
 
+.secondary-button {
+    -fx-background-color: -qmar-primary;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+.secondary-button:hover {
+    -fx-background-color: -qmar-primary-dark;
+}
+
 .btn-receive {
     -fx-background-color: white;
     -fx-border-color: -qmar-border-color;

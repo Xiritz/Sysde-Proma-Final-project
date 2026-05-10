@@ -15,7 +15,7 @@
         <!-- Inventory Forms -->
         <VBox spacing="20.0" prefWidth="300.0">
             <!-- Add New Item -->
-            <VBox spacing="10.0" styleClass="card">
+            <VBox fx:id="addItemContainer" spacing="10.0" styleClass="card">
                 <Label text="Add New Item" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
                 <TextField fx:id="newItemNameField" promptText="Item Name" />
                 <TextField fx:id="newStockField" promptText="Initial Stock" />
@@ -39,6 +39,7 @@
         <VBox spacing="10.0" HBox.hgrow="ALWAYS" styleClass="card">
             <HBox alignment="CENTER_LEFT" spacing="10.0">
                 <Label text="Inventory List" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                <TextField fx:id="searchField" promptText="Search items..." prefWidth="200.0" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Label fx:id="lowStockAlertLabel" text="Low stock items detected!" style="-fx-text-fill: #e67e22; -fx-font-weight: bold;" visible="false" />
             </HBox>

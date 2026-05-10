@@ -28,13 +28,17 @@
                 <Label text="Contact Number" />
                 <TextField fx:id="contactField" promptText="Enter contact number" />
             </VBox>
-            <Button text="Register Customer" onAction="#handleRegister" maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
-            <Button text="Clear" onAction="#handleClear" maxWidth="Infinity" />
+            <Button text="Register Customer" onAction="#handleRegister" maxWidth="Infinity" styleClass="success-button" />
+            <Button text="Clear" onAction="#handleClear" maxWidth="Infinity" styleClass="secondary-button" />
         </VBox>
 
         <!-- Customer List -->
         <VBox spacing="10.0" HBox.hgrow="ALWAYS" styleClass="card">
-            <Label text="Customer List" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label text="Customer List" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <TextField fx:id="searchField" promptText="Search customers..." prefWidth="250.0" />
+            </HBox>
             <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
                 <VBox fx:id="cardsContainer" spacing="10.0" style="-fx-padding: 5;">
                     <!-- Cards will be injected here -->

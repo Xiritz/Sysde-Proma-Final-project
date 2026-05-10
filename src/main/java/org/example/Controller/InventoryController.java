@@ -24,10 +24,13 @@ public class InventoryController {
     @FXML private ComboBox<InventoryItem> itemComboBox;
     @FXML private TextField adjustmentQuantityField;
 
+    @FXML private VBox addItemContainer;
     @FXML private Label lowStockAlertLabel;
+    @FXML private TextField searchField;
     @FXML private VBox cardsContainer;
 
     private ObservableList<InventoryItem> inventoryList;
+    private javafx.collections.transformation.FilteredList<InventoryItem> filteredData;
 
     @FXML
     public void initialize() {
@@ -44,11 +47,36 @@ public class InventoryController {
         });
 
         refreshData();
+
+        org.example.Model.User currentUser = App.loginService.getCurrentUser();
+        if (currentUser != null && currentUser.getRole() == org.example.Model.Role.EMPLOYEE) {
+            addItemContainer.setVisible(false);
+            addItemContainer.setManaged(false);
+        }
+
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(item -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                
+                String lowerCaseFilter = newValue.toLowerCase();
+                
+                if (item.getItemName().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (item.getItemId().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                }
+                return false;
+            });
+            renderCards();
+        });
     }
 
     private void refreshData() {
         List<InventoryItem> allItems = App.inventoryService.getAllItems();
         inventoryList = FXCollections.observableArrayList(allItems);
+        filteredData = new javafx.collections.transformation.FilteredList<>(inventoryList, p -> true);
         itemComboBox.setItems(inventoryList);
 
         boolean hasLowStock = !App.inventoryService.getLowStockItems().isEmpty();
@@ -60,14 +88,14 @@ public class InventoryController {
     private void renderCards() {
         cardsContainer.getChildren().clear();
         
-        if (inventoryList.isEmpty()) {
-            Label noData = new Label("No inventory items found.");
+        if (filteredData.isEmpty()) {
+            Label noData = new Label(searchField.getText().isEmpty() ? "No inventory items found." : "No items match your search.");
             noData.setStyle("-fx-text-fill: -qmar-text-muted; -fx-padding: 20;");
             cardsContainer.getChildren().add(noData);
             return;
         }
 
-        for (InventoryItem item : inventoryList) {
+        for (InventoryItem item : filteredData) {
             cardsContainer.getChildren().add(createInventoryCard(item));
         }
     }
@@ -216,6 +244,12 @@ public class InventoryController {
 
     @FXML
     private void handleAddItem() {
+        org.example.Model.User currentUser = App.loginService.getCurrentUser();
+        if (currentUser != null && currentUser.getRole() == org.example.Model.Role.EMPLOYEE) {
+            showAlert(Alert.AlertType.ERROR, "Access Denied", "Employees are not authorized to add new inventory items.");
+            return;
+        }
+
         markFieldInvalid(newItemNameField, false);
         markFieldInvalid(newStockField, false);
         markFieldInvalid(newThresholdField, false);

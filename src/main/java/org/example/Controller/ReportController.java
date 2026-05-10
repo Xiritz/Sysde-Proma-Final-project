@@ -1,16 +1,26 @@
 package org.example.Controller;
 
-import javafx.beans.property.SimpleStringProperty;
+import com.lowagie.text.*;
+import com.lowagie.text.Font;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import org.example.App;
 import org.example.Model.Expense;
 import org.example.Model.Transaction;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -27,8 +37,12 @@ public class ReportController {
 
     @FXML private TextField expenseNameField;
     @FXML private TextField expenseCostField;
+    @FXML private TextField searchField;
 
     @FXML private VBox cardsContainer;
+
+    private ObservableList<Expense> expenseList = FXCollections.observableArrayList();
+    private FilteredList<Expense> filteredExpenses;
 
     @FXML
     public void initialize() {
@@ -39,21 +53,33 @@ public class ReportController {
             endDatePicker.setDisable(!isCustom);
         });
 
+        filteredExpenses = new FilteredList<>(expenseList, p -> true);
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredExpenses.setPredicate(expense -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                String lowerCaseFilter = newValue.toLowerCase();
+                return expense.getExpenseName().toLowerCase().contains(lowerCaseFilter);
+            });
+            renderCards();
+        });
+
         rangeComboBox.getSelectionModel().select("Daily");
         handleGenerateReport();
     }
 
-    private void renderCards(List<Expense> expenses) {
+    private void renderCards() {
         cardsContainer.getChildren().clear();
         
-        if (expenses.isEmpty()) {
-            Label noData = new Label("No expenses recorded for this period.");
+        if (filteredExpenses.isEmpty()) {
+            Label noData = new Label(searchField.getText().isEmpty() ? "No expenses recorded for this period." : "No expenses match your search.");
             noData.setStyle("-fx-text-fill: -qmar-text-muted; -fx-padding: 20;");
             cardsContainer.getChildren().add(noData);
             return;
         }
 
-        for (Expense e : expenses) {
+        for (Expense e : filteredExpenses) {
             cardsContainer.getChildren().add(createExpenseCard(e));
         }
     }
@@ -217,7 +243,8 @@ public class ReportController {
         expenseLabel.setText(String.format("Php %.2f", totalExpenses));
         profitLabel.setText(String.format("Php %.2f", totalRevenue - totalExpenses));
 
-        renderCards(expenses);
+        expenseList.setAll(expenses);
+        renderCards();
     }
 
     private Date getStartDateForRange(String range, Date customStart) {
@@ -284,4 +311,80 @@ public class ReportController {
         }
     }
 
+    @FXML
+    private void handleExportPDF() {
+        if (expenseList.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "No Data", "There are no expenses to export in this period.");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Report as PDF");
+        fileChooser.setInitialFileName("Financial_Report_" + rangeComboBox.getValue() + ".pdf");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+        
+        File file = fileChooser.showSaveDialog(cardsContainer.getScene().getWindow());
+        
+        if (file != null) {
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                Document document = new Document(PageSize.A4);
+                PdfWriter.getInstance(document, fos);
+                document.open();
+
+                // Fonts
+                Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20);
+                Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+                Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 11);
+
+                // Title
+                Paragraph title = new Paragraph("Financial Report", titleFont);
+                title.setAlignment(Element.ALIGN_CENTER);
+                title.setSpacingAfter(20);
+                document.add(title);
+
+                // Range Info
+                document.add(new Paragraph("Report Period: " + rangeComboBox.getValue(), headerFont));
+                document.add(new Paragraph("Generated on: " + new Date().toString(), normalFont));
+                document.add(new Paragraph(" "));
+
+                // Summary Table
+                PdfPTable summaryTable = new PdfPTable(2);
+                summaryTable.setWidthPercentage(100);
+                summaryTable.addCell("Total Revenue:");
+                summaryTable.addCell(revenueLabel.getText());
+                summaryTable.addCell("Total Expenses:");
+                summaryTable.addCell(expenseLabel.getText());
+                summaryTable.addCell("Net Profit:");
+                summaryTable.addCell(profitLabel.getText());
+                document.add(summaryTable);
+                document.add(new Paragraph(" "));
+
+                // Expense Details Title
+                Paragraph expenseTitle = new Paragraph("Expense Breakdown", headerFont);
+                expenseTitle.setSpacingAfter(10);
+                document.add(expenseTitle);
+
+                // Expense Table
+                PdfPTable table = new PdfPTable(3);
+                table.setWidthPercentage(100);
+                table.addCell("Date");
+                table.addCell("Expense Name");
+                table.addCell("Cost");
+
+                for (Expense e : filteredExpenses) {
+                    table.addCell(e.getDateIncurred().toString().substring(0, 10));
+                    table.addCell(e.getExpenseName());
+                    table.addCell(String.format("Php %.2f", e.getCost()));
+                }
+                
+                document.add(table);
+                document.close();
+                
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Report exported successfully to " + file.getName());
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Export Error", "Failed to export PDF: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
 }
