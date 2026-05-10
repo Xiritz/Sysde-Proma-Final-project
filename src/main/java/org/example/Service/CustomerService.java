@@ -144,6 +144,11 @@ public class CustomerService {
             throw new IllegalStateException("Cannot delete customer: They still have transactions with an outstanding balance.");
         }
 
+        // Rule: Cannot delete if they have active laundry orders (not Delivered)
+        if (hasActiveOrders(customerId)) {
+            throw new IllegalStateException("Cannot delete customer: They still have active/pending laundry orders.");
+        }
+
         try (Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false);
             try {
@@ -175,6 +180,22 @@ public class CustomerService {
 
     private boolean hasPendingPayments(String customerId) {
         String query = "SELECT COUNT(*) FROM transactions WHERE customerId = ? AND outstandingBalance > 0";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, customerId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean hasActiveOrders(String customerId) {
+        String query = "SELECT COUNT(*) FROM transactions WHERE customerId = ? AND laundryStatus != 'Delivered'";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, customerId);

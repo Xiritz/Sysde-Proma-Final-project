@@ -55,8 +55,11 @@ public class StaffController {
     }
 
     private void refreshData() {
-        staffList = FXCollections.observableArrayList(App.userService.getAllUsers());
-        filteredData = new javafx.collections.transformation.FilteredList<>(staffList, p -> true);
+        if (staffList == null) {
+            staffList = FXCollections.observableArrayList();
+            filteredData = new javafx.collections.transformation.FilteredList<>(staffList, p -> true);
+        }
+        staffList.setAll(App.userService.getAllUsers());
         renderCards();
     }
 
@@ -134,9 +137,18 @@ public class StaffController {
             confirm.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     try {
-                        App.userService.removeUser(App.loginService.getCurrentUser(), u.getUserId());
-                        refreshData();
-                        showAlert(Alert.AlertType.INFORMATION, "Success", "Staff member removed.");
+                        String deletedUserId = u.getUserId();
+                        User currentUserLoggedIn = App.loginService.getCurrentUser();
+
+                        App.userService.removeUser(currentUserLoggedIn, deletedUserId);
+                        
+                        if (currentUserLoggedIn != null && currentUserLoggedIn.getUserId().equals(deletedUserId)) {
+                            App.loginService.logout();
+                            App.setRoot("login");
+                        } else {
+                            refreshData();
+                            showAlert(Alert.AlertType.INFORMATION, "Success", "Staff member removed.");
+                        }
                     } catch (Exception ex) {
                         showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
                     }

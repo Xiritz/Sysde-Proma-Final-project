@@ -20,6 +20,8 @@ public class DashboardController {
     @FXML
     private Label roleLabel;
     @FXML
+    private Label userInitialsLabel;
+    @FXML
     private VBox sidebar;
     @FXML
     private StackPane contentArea;
@@ -43,6 +45,11 @@ public class DashboardController {
             userLabel.setText(user.getUsername());
             if (roleLabel != null) {
                 roleLabel.setText(user.getRole().toString());
+            }
+            
+            if (userInitialsLabel != null) {
+                String initials = user.getUsername().substring(0, Math.min(2, user.getUsername().length())).toUpperCase();
+                userInitialsLabel.setText(initials);
             }
             
             // Hide admin buttons for employees (Allow ADMIN and OWNER)

@@ -53,9 +53,10 @@ public class LoginController {
             // Success! Load Dashboard
             App.setRoot("dashboard");
         } else {
-            markFieldInvalid(usernameField, true);
-            markFieldInvalid(passwordField, true);
-            errorLabel.setText("Invalid username or password.");
+            // Add error styling without the 'Required' labels
+            usernameField.getStyleClass().add("error-field");
+            passwordField.getStyleClass().add("error-field");
+            errorLabel.setText("Incorrect username or password. Please try again.");
         }
     }
 }

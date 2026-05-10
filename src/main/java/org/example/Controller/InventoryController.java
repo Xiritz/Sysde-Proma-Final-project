@@ -34,6 +34,28 @@ public class InventoryController {
 
     @FXML
     public void initialize() {
+        // Input Restrictions: Numeric Fields (Positive Only)
+        TextFormatter<String> numericFilter = new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("|[0-9]{0,5}")) return change;
+            return null;
+        });
+        newStockField.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("|[0-9]{0,5}")) return change;
+            return null;
+        }));
+        newThresholdField.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("|[0-9]{0,5}")) return change;
+            return null;
+        }));
+        adjustmentQuantityField.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("|[0-9]{0,5}")) return change;
+            return null;
+        }));
+
         itemComboBox.setConverter(new StringConverter<InventoryItem>() {
             @Override
             public String toString(InventoryItem item) {
@@ -75,9 +97,12 @@ public class InventoryController {
 
     private void refreshData() {
         List<InventoryItem> allItems = App.inventoryService.getAllItems();
-        inventoryList = FXCollections.observableArrayList(allItems);
-        filteredData = new javafx.collections.transformation.FilteredList<>(inventoryList, p -> true);
-        itemComboBox.setItems(inventoryList);
+        if (inventoryList == null) {
+            inventoryList = FXCollections.observableArrayList();
+            filteredData = new javafx.collections.transformation.FilteredList<>(inventoryList, p -> true);
+            itemComboBox.setItems(inventoryList);
+        }
+        inventoryList.setAll(allItems);
 
         boolean hasLowStock = !App.inventoryService.getLowStockItems().isEmpty();
         lowStockAlertLabel.setVisible(hasLowStock);

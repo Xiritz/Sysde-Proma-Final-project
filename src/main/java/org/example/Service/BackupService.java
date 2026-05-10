@@ -54,9 +54,38 @@ public class BackupService {
     }
 
     private void syncTable(String tableName) throws Exception {
+        // Map table names to their primary key columns (in lowercase as per fetchTableData)
+        String idColumn = switch (tableName) {
+            case "customers" -> "customerid";
+            case "inventory" -> "itemid";
+            case "expenses" -> "expenseid";
+            case "transactions" -> "transactionid";
+            case "users" -> "userid";
+            default -> "id";
+        };
+
+        // 1. Clear Supabase table to handle deletions
+        // Use a filter that matches all rows: idColumn IS NOT NULL
+        HttpRequest deleteRequest = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseUrl + tableName + "?" + idColumn + "=not.is.null"))
+                .header("apikey", supabaseKey)
+                .header("Authorization", "Bearer " + supabaseKey)
+                .DELETE()
+                .build();
+        
+        try {
+            HttpResponse<String> deleteResponse = httpClient.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+            if (deleteResponse.statusCode() >= 300) {
+                System.err.println("Warning: Could not clear table '" + tableName + "'. Status: " + deleteResponse.statusCode() + " - " + deleteResponse.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Could not clear table '" + tableName + "' before sync. " + e.getMessage());
+        }
+
+        // 2. Upload local data
         JsonArray data = fetchTableData(tableName);
         if (data.size() == 0) {
-            System.out.println("No data to sync for table: " + tableName);
+            System.out.println("Local table '" + tableName + "' is empty. Syncing empty state to Supabase.");
             return;
         }
 

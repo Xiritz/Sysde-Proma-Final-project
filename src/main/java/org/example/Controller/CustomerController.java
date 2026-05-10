@@ -26,6 +26,12 @@ public class CustomerController {
     public void initialize() {
         refreshTable();
         
+        // Input Restrictions: Numeric only for contact field
+        contactField.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("[0-9]*")) return change;
+            return null;
+        }));
+
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(customer -> {
                 if (newValue == null || newValue.isEmpty()) {
@@ -48,8 +54,11 @@ public class CustomerController {
     }
 
     private void refreshTable() {
-        customerList = FXCollections.observableArrayList(App.customerService.getAllCustomers());
-        filteredData = new javafx.collections.transformation.FilteredList<>(customerList, p -> true);
+        if (customerList == null) {
+            customerList = FXCollections.observableArrayList();
+            filteredData = new javafx.collections.transformation.FilteredList<>(customerList, p -> true);
+        }
+        customerList.setAll(App.customerService.getAllCustomers());
         renderCards();
     }
 
@@ -146,17 +155,33 @@ public class CustomerController {
         address.setPrefRowCount(3);
         TextField contact = new TextField(c.getContactNumber());
         contact.setPromptText("Contact Number");
+        
+        // Numeric only for contact
+        contact.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("[0-9]*")) return change;
+            return null;
+        }));
 
         grid.getChildren().addAll(new Label("Name:"), name, new Label("Address:"), address, new Label("Contact:"), contact);
         dialog.getDialogPane().setContent(grid);
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == updateButtonType) {
-                if (name.getText().trim().isEmpty() || address.getText().trim().isEmpty() || contact.getText().trim().isEmpty()) {
+                String n = name.getText().trim();
+                String a = address.getText().trim();
+                String ct = contact.getText().trim();
+
+                if (n.isEmpty() || a.isEmpty() || ct.isEmpty()) {
                     showAlert(Alert.AlertType.ERROR, "Error", "All fields are required.");
                     return null;
                 }
-                return new Customer(c.getCustomerId(), name.getText(), address.getText(), contact.getText());
+                
+                if (!n.matches("[a-zA-Z\\\\s.]+")) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Name should only contain letters, spaces, and dots.");
+                    return null;
+                }
+                
+                return new Customer(c.getCustomerId(), n, a, ct);
             }
             return null;
         });
@@ -192,25 +217,31 @@ public class CustomerController {
         markFieldInvalid(addressField, false);
         markFieldInvalid(contactField, false);
 
-        String name = nameField.getText();
-        String address = addressField.getText();
-        String contact = contactField.getText();
+        String name = nameField.getText().trim();
+        String address = addressField.getText().trim();
+        String contact = contactField.getText().trim();
 
         boolean hasError = false;
-        if (name.trim().isEmpty()) {
+        if (name.isEmpty()) {
             markFieldInvalid(nameField, true);
             hasError = true;
         }
-        if (address.trim().isEmpty()) {
+        if (address.isEmpty()) {
             markFieldInvalid(addressField, true);
             hasError = true;
         }
-        if (contact.trim().isEmpty()) {
+        if (contact.isEmpty()) {
             markFieldInvalid(contactField, true);
             hasError = true;
         }
 
         if (hasError) return;
+        
+        // Name Sanitation
+        if (!name.matches("[a-zA-Z\\\\s.]+")) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Name should only contain letters, spaces, and dots.");
+            return;
+        }
 
         String id = App.customerService.generateNextId();
         Customer customer = new Customer(id, name, address, contact);

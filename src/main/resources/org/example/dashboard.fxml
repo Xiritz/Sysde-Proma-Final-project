@@ -32,46 +32,41 @@
         <VBox>
             <!-- Top Header -->
             <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-padding: 15 30;">
-                <VBox>
-                    <Label styleClass="header-title" text="Dashboard" />
-                    <Label styleClass="header-subtext" text="Overview of your laundry operations" />
-                </VBox>
-                
-                <Region HBox.hgrow="ALWAYS" />
-                
-                <Region HBox.hgrow="ALWAYS" />
-                
-                <HBox alignment="CENTER_RIGHT" spacing="15.0">
-                    <Button onAction="#handleTransactions" styleClass="btn-new-order" text="+ New Order" />
-                    
-                    <StackPane fx:id="notificationBell" onMouseClicked="#showLowStockMenu" style="-fx-cursor: hand;">
-                        <Label style="-fx-font-size: 20px;" text="🔔" />
-                        <Label fx:id="notificationBadge" styleClass="bell-badge" text="!" StackPane.alignment="TOP_RIGHT">
-                            <StackPane.margin><Insets right="-2" top="-2" /></StackPane.margin>
-                        </Label>
-                    </StackPane>
-                    
-                    <Separator orientation="VERTICAL" prefHeight="30.0" />
-                    
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <StackPane styleClass="avatar-circle">
-                            <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold;" text="JS" />
-                        </StackPane>
-                        <VBox alignment="CENTER_LEFT">
-                            <Label fx:id="userLabel" style="-fx-font-weight: bold; -fx-text-fill: #1e293b;" text="Jane Smith" />
-                            <Label fx:id="roleLabel" style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="Admin" />
-                        </VBox>
-                    </HBox>
-                </HBox>
+               <VBox>
+                   <Label styleClass="header-title" text="Dashboard" />
+                   <Label styleClass="header-subtext" text="Overview of your laundry operations" />
+               </VBox>
+
+               <Region HBox.hgrow="ALWAYS" />
+
+               <HBox alignment="CENTER_RIGHT" spacing="15.0">
+                   <Button onAction="#handleTransactions" styleClass="btn-new-order" text="+ New Order" />
+
+                   <StackPane fx:id="notificationBell" onMouseClicked="#showLowStockMenu" style="-fx-cursor: hand;">
+                       <Label style="-fx-font-size: 20px;" text="🔔" />
+                       <Label fx:id="notificationBadge" styleClass="bell-badge" text="!" StackPane.alignment="TOP_RIGHT">
+                           <StackPane.margin><Insets right="-2" top="-2" /></StackPane.margin>
+                       </Label>
+                   </StackPane>
+
+                   <Separator orientation="VERTICAL" prefHeight="30.0" />
+
+                   <HBox alignment="CENTER_LEFT" spacing="10.0">
+                       <StackPane styleClass="avatar-circle">
+                           <Label fx:id="userInitialsLabel" style="-fx-text-fill: #64748b; -fx-font-weight: bold;" text="?" />
+                       </StackPane>
+                       <VBox alignment="CENTER_LEFT">
+                           <Label fx:id="userLabel" style="-fx-font-weight: bold; -fx-text-fill: #1e293b;" text="Jane Smith" />
+                           <Label fx:id="roleLabel" style="-fx-font-size: 11px; -fx-text-fill: #64748b;" text="Admin" />
+                       </VBox>
+                   </HBox>
+               </HBox>
             </HBox>
-            
-            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
-                <StackPane fx:id="contentArea">
-                    <padding>
-                        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
-                    </padding>
-                </StackPane>
-            </ScrollPane>
-        </VBox>
-    </center>
+
+            <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS">
+               <padding>
+                   <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+               </padding>
+            </StackPane>
+            </VBox>    </center>
 </BorderPane>

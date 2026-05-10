@@ -48,11 +48,20 @@ public class TransactionController {
 
     @FXML
     public void initialize() {
-        // Input Restrictions: Weight Field
+        // Input Restrictions: Weight Field (Positive Only)
         weightField.setTextFormatter(new TextFormatter<>(change -> {
             String newText = change.getControlNewText();
             if (newText.length() > 5) return null;
             if (newText.matches("|[0-9]{1,3}(\\.[0-9]{0,1})?")) {
+                return change;
+            }
+            return null;
+        }));
+
+        // Input Restrictions: Payment Field (Positive Only)
+        paymentField.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("|[0-9]{0,5}(\\.[0-9]{0,2})?")) {
                 return change;
             }
             return null;
@@ -84,6 +93,9 @@ public class TransactionController {
         paymentMethodComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             updatePaymentFieldState();
         });
+
+        // Initialize payment field state
+        updatePaymentFieldState();
 
         // Status Filter Setup
         statusFilter.setItems(FXCollections.observableArrayList(
@@ -401,8 +413,9 @@ public class TransactionController {
     private void updatePaymentFieldState() {
         InitialPaymentMethod method = paymentMethodComboBox.getValue();
         if (method == null) {
-            paymentFieldContainer.setVisible(true);
-            paymentField.setDisable(false);
+            paymentFieldContainer.setVisible(false);
+            paymentField.setDisable(true);
+            paymentField.setText("");
             return;
         }
 
@@ -467,22 +480,47 @@ public class TransactionController {
         dialog.setHeaderText("Register a new customer");
         ButtonType registerButtonType = new ButtonType("Register", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(registerButtonType, ButtonType.CANCEL);
+        
         VBox grid = new VBox(10);
         TextField name = new TextField(); name.setPromptText("Full Name");
         TextArea address = new TextArea(); address.setPromptText("Address"); address.setPrefRowCount(3);
-        TextField contact = new TextField(); contact.setPromptText("Contact Number");
+        TextField contact = new TextField(); contact.setPromptText("Contact Number (Numeric)");
+        
+        // Strict Numeric Filter for Phone Number
+        contact.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("[0-9]*")) return change;
+            return null;
+        }));
+
         grid.getChildren().addAll(new Label("Name:"), name, new Label("Address:"), address, new Label("Contact:"), contact);
         dialog.getDialogPane().setContent(grid);
+        
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == registerButtonType) {
-                if (name.getText().trim().isEmpty() || address.getText().trim().isEmpty() || contact.getText().trim().isEmpty()) {
+                String n = name.getText().trim();
+                String a = address.getText().trim();
+                String c = contact.getText().trim();
+
+                if (n.isEmpty() || a.isEmpty() || c.isEmpty()) {
                     showAlert(Alert.AlertType.ERROR, "Error", "All fields are required.");
                     return null;
                 }
-                String id = App.customerService.generateNextId();
-                Customer c = new Customer(id, name.getText(), address.getText(), contact.getText());
-                App.customerService.registerCustomer(c);
-                return c;
+                
+                // Name Sanitation (Alpha-spaces only)
+                if (!n.matches("[a-zA-Z\\\\s.]+")) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Name should only contain letters, spaces, and dots.");
+                    return null;
+                }
+
+                try {
+                    String id = App.customerService.generateNextId();
+                    Customer customer = new Customer(id, n, a, c);
+                    App.customerService.registerCustomer(customer);
+                    return customer;
+                } catch (IllegalArgumentException e) {
+                    showAlert(Alert.AlertType.ERROR, "Registration Error", e.getMessage());
+                    return null;
+                }
             }
             return null;
         });
@@ -529,12 +567,12 @@ public class TransactionController {
                 if (weightField.getText().trim().isEmpty()) { markFieldInvalid(weightField, "Required"); hasError = true; }
                 else {
                     weight = Double.parseDouble(weightField.getText());
-                    if (weight <= 0) { markFieldInvalid(weightField, "Invalid"); hasError = true; }
+                    if (weight < 1.0) { markFieldInvalid(weightField, "Min 1.0 kg"); hasError = true; }
                 }
             } catch (NumberFormatException e) { markFieldInvalid(weightField, "Invalid"); hasError = true; }
 
             int loads = loadsSpinner.getValue();
-            if (weight > 0) {
+            if (weight >= 1.0) {
                 int[] range = calculateLoadRange(weight);
                 if (loads < range[0] || loads > range[1]) { markFieldInvalid(loadsSpinner, range[0]+"-"+range[1]); hasError = true; }
             }
@@ -546,6 +584,10 @@ public class TransactionController {
                     else {
                         payment = Double.parseDouble(paymentField.getText());
                         if (payment < 0) { markFieldInvalid(paymentField, "Invalid"); hasError = true; }
+                        if (method == InitialPaymentMethod.DOWN_PAYMENT && payment <= 0) {
+                            markFieldInvalid(paymentField, "Must be > 0");
+                            hasError = true;
+                        }
                     }
                 } catch (NumberFormatException e) { markFieldInvalid(paymentField, "Invalid"); hasError = true; }
             } else if (paymentField.isDisable() && !paymentField.getText().isEmpty()) {

@@ -52,8 +52,6 @@
             </ScrollPane>
             
             <Region VBox.vgrow="ALWAYS" />
-            
-            <Button text="View All Ready Orders" maxWidth="Infinity" onAction="#handleViewAllReady" styleClass="btn-new-order" style="-fx-font-size: 11;" />
         </VBox>
     </HBox>
 </VBox>
