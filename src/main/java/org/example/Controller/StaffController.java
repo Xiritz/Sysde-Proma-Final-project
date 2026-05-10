@@ -26,7 +26,11 @@ public class StaffController {
 
     @FXML
     public void initialize() {
-        roleComboBox.setItems(FXCollections.observableArrayList(Role.values()));
+        // Filter roles: Do not allow assigning the OWNER role via the UI
+        ObservableList<Role> assignableRoles = FXCollections.observableArrayList(Role.values());
+        assignableRoles.remove(Role.OWNER);
+        roleComboBox.setItems(assignableRoles);
+        
         refreshData();
 
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -87,7 +91,7 @@ public class StaffController {
         
         Label roleBadge = new Label(u.getRole().toString());
         roleBadge.getStyleClass().add("badge");
-        if (u.getRole() == Role.ADMIN) {
+        if (u.getRole() == Role.ADMIN || u.getRole() == Role.OWNER) {
             roleBadge.setStyle("-fx-background-color: -qmar-primary-dark;");
         } else {
             roleBadge.setStyle("-fx-background-color: -qmar-success;");
@@ -108,7 +112,16 @@ public class StaffController {
         Button removeBtn = new Button("Remove");
         removeBtn.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: -qmar-danger; -fx-border-color: -qmar-danger; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
         
-        if (u.getUsername().equals("admin")) {
+        User currentUser = App.loginService.getCurrentUser();
+        boolean isCurrentUserOwner = currentUser != null && currentUser.getRole() == Role.OWNER;
+
+        // PROTECTION RULES:
+        // 1. Cannot remove an OWNER account
+        if (u.getRole() == Role.OWNER) {
+            removeBtn.setDisable(true);
+        }
+        // 2. Only OWNER can remove the default 'admin' account
+        else if (u.getUsername().equals("admin") && !isCurrentUserOwner) {
             removeBtn.setDisable(true);
         }
 
@@ -155,7 +168,9 @@ public class StaffController {
         grid.getChildren().addAll(new Label("Username:"), username);
 
         PasswordField password = new PasswordField();
-        ComboBox<Role> role = new ComboBox<>(FXCollections.observableArrayList(Role.values()));
+        ObservableList<Role> editableRoles = FXCollections.observableArrayList(Role.values());
+        editableRoles.remove(Role.OWNER);
+        ComboBox<Role> role = new ComboBox<>(editableRoles);
 
         if (isOwner) {
             password.setPromptText("New Password (leave blank to keep)");

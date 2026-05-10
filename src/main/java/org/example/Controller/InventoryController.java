@@ -153,11 +153,27 @@ public class InventoryController {
 
             Button removeBtn = new Button("Remove");
             removeBtn.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: -qmar-danger; -fx-border-color: -qmar-danger; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
+            
+            // PROTECTION RULES for core items
+            boolean isCoreItem = item.getItemId().equals("I001") || item.getItemId().equals("I002");
+            boolean isOwner = currentUser.getRole() == org.example.Model.Role.OWNER;
+
+            if (isCoreItem && !isOwner) {
+                removeBtn.setDisable(true);
+            }
+
             removeBtn.setOnAction(e -> {
+                String warningMessage = "Are you sure you want to permanently remove this item from inventory?";
+                if (isCoreItem) {
+                    warningMessage = "STERN WARNING: This is a CORE inventory item (Detergent/Softener). " +
+                            "Removing this will disrupt the transaction system and order processing. " +
+                            "ONLY proceed if you are absolutely certain of the consequences!";
+                }
+
                 Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                confirm.setTitle("Confirm Removal");
+                confirm.setTitle(isCoreItem ? "STERN WARNING: CORE ITEM REMOVAL" : "Confirm Removal");
                 confirm.setHeaderText("Remove Item: " + item.getItemName());
-                confirm.setContentText("Are you sure you want to permanently remove this item from inventory?");
+                confirm.setContentText(warningMessage);
                 
                 confirm.showAndWait().ifPresent(response -> {
                     if (response == ButtonType.OK) {

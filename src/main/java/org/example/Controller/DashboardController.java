@@ -45,8 +45,8 @@ public class DashboardController {
                 roleLabel.setText(user.getRole().toString());
             }
             
-            // Hide admin buttons for employees
-            if (user.getRole() != Role.ADMIN) {
+            // Hide admin buttons for employees (Allow ADMIN and OWNER)
+            if (user.getRole() == Role.EMPLOYEE) {
                 staffBtn.setVisible(false);
                 staffBtn.setManaged(false);
                 reportsBtn.setVisible(false);

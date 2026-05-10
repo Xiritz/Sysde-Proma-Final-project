@@ -63,8 +63,9 @@ public class HomeController {
         int lowStockCount = App.inventoryService.getLowStockItems().size();
         lowStockLabel.setText(String.valueOf(lowStockCount));
 
-        // Daily Revenue (Only for Admin)
-        if (App.loginService.getCurrentUser() != null && App.loginService.getCurrentUser().getRole() == Role.ADMIN) {
+        // Daily Revenue (Allow ADMIN and OWNER)
+        Role userRole = (App.loginService.getCurrentUser() != null) ? App.loginService.getCurrentUser().getRole() : null;
+        if (userRole == Role.ADMIN || userRole == Role.OWNER) {
             double dailyRev = allTransactions.stream()
                     .filter(t -> t.getDatePlaced() != null && !t.getDatePlaced().before(getStartOfDay()))
                     .mapToDouble(Transaction::getAmountPaid)

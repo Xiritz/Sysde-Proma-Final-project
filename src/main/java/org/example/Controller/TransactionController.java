@@ -556,10 +556,14 @@ public class TransactionController {
             String creatorName = (currentUser != null) ? currentUser.getUsername() : "Unknown";
             
             Transaction t = new Transaction(id, customer, service, new Date(), weight, loads, 0, payment, 0, Status.PENDING, method, creatorName);
-            App.transactionService.createTransaction(t);
-            handleClear();
-            refreshData();
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Order created successfully!");
+            try {
+                App.transactionService.createTransaction(t);
+                handleClear();
+                refreshData();
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Order created successfully!");
+            } catch (IllegalStateException e) {
+                showAlert(Alert.AlertType.ERROR, "Inventory Error", e.getMessage());
+            }
         } catch (Exception e) { showAlert(Alert.AlertType.ERROR, "Error", e.getMessage()); }
     }
 

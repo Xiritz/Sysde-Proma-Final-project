@@ -214,11 +214,15 @@ public class CustomerController {
 
         String id = App.customerService.generateNextId();
         Customer customer = new Customer(id, name, address, contact);
-        App.customerService.registerCustomer(customer);
-
-        handleClear();
-        refreshTable();
-        showAlert(Alert.AlertType.INFORMATION, "Success", "Customer registered successfully!");
+        
+        try {
+            App.customerService.registerCustomer(customer);
+            handleClear();
+            refreshTable();
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Customer registered successfully!");
+        } catch (IllegalArgumentException e) {
+            showAlert(Alert.AlertType.ERROR, "Registration Error", e.getMessage());
+        }
     }
 
     @FXML

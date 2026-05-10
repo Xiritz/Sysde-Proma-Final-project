@@ -9,29 +9,19 @@ public class DatabaseConnection {
     private static final String USER = "root";
     private static final String PASSWORD = "123";
 
-    private static Connection connection = null;
-
     public static Connection getConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
-            try {
-                // Load the MySQL JDBC Driver
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            } catch (ClassNotFoundException e) {
-                System.err.println("MySQL Driver not found.");
-                e.printStackTrace();
-            }
+        try {
+            // Load the MySQL JDBC Driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            return DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (ClassNotFoundException e) {
+            System.err.println("MySQL Driver not found.");
+            e.printStackTrace();
+            throw new SQLException("Driver not found", e);
         }
-        return connection;
     }
 
     public static void closeConnection() {
-        if (connection != null) {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        // No longer managing a singleton connection
     }
 }
