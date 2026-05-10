@@ -135,7 +135,12 @@ public class Transaction {
     }
 
     public double calculateTotalCost() {
-        double pricePerLoad = 250.0;
+        double pricePerLoad = switch (this.service) {
+            case WASH -> 90.0;
+            case WASH_DRY -> 180.0;
+            case WASH_DRY_FOLD -> 220.0;
+        };
+        
         // Auto-compute loads if not set: Use 8kg soft cap as standard
         if (this.loadCount == 0 && this.weightKg > 0) {
             this.loadCount = (int) Math.ceil(this.weightKg / 8.0);

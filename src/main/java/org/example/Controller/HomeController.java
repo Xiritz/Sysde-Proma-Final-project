@@ -154,7 +154,7 @@ public class HomeController {
         Label custLabel = new Label(t.getCustomer() != null ? t.getCustomer().getCustomerName() : "N/A");
         custLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: -qmar-text-main;");
         
-        Label serviceLabel = new Label(t.getService().toString().replace("_", " "));
+        Label serviceLabel = new Label(t.getService().toString());
         serviceLabel.setStyle("-fx-text-fill: -qmar-text-muted; -fx-font-size: 12px;");
 
         String dateStr = t.getDatePlaced() != null ? dateFormat.format(t.getDatePlaced()) : "No Date";

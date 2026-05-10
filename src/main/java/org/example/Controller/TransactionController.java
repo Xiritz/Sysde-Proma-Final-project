@@ -237,7 +237,7 @@ public class TransactionController {
         Label custName = new Label(t.getCustomer() != null ? t.getCustomer().getCustomerName() : "N/A");
         custName.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         
-        Label serviceLabel = new Label(t.getService().toString().replace("_", " "));
+        Label serviceLabel = new Label(t.getService().toString());
         serviceLabel.setStyle("-fx-text-fill: -qmar-text-muted;");
         
         Label weightLabel = new Label(String.format("%.1f kg (%d loads)", t.getWeightKg(), t.getLoadCount()));
@@ -427,8 +427,13 @@ public class TransactionController {
 
     private double calculateCurrentTotal() {
         Integer loads = loadsSpinner.getValue();
-        if (loads != null) {
-            double pricePerLoad = 250.0;
+        Service service = serviceComboBox.getValue();
+        if (loads != null && service != null) {
+            double pricePerLoad = switch (service) {
+                case WASH -> 90.0;
+                case WASH_DRY -> 180.0;
+                case WASH_DRY_FOLD -> 220.0;
+            };
             return pricePerLoad * loads;
         }
         return 0.0;

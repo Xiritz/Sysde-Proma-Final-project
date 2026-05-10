@@ -23,10 +23,6 @@ public class App extends Application {
     public static final ExpenseService expenseService = new ExpenseService();
     public static final TransactionService transactionService = new TransactionService(expenseService, inventoryService);
 
-    static {
-        org.example.Util.DataLoader.loadPlaceholderData(customerService, inventoryService, expenseService, transactionService);
-    }
-
     @Override
     public void start(Stage stage) throws IOException {
         scene = new Scene(loadFXML("login"), 1200, 800);
