@@ -80,4 +80,16 @@ public class ExpenseService {
         }
         expenses.removeIf(e -> e.getExpenseId().equals(expenseId));
     }
+
+    public void updateExpense(org.example.Model.User requester, Expense updatedExpense) {
+        if (requester.getRole() != org.example.Model.Role.ADMIN && requester.getRole() != org.example.Model.Role.OWNER) {
+            throw new SecurityException("Only admins or owners can update expenses.");
+        }
+        for (int i = 0; i < expenses.size(); i++) {
+            if (expenses.get(i).getExpenseId().equals(updatedExpense.getExpenseId())) {
+                expenses.set(i, updatedExpense);
+                return;
+            }
+        }
+    }
 }

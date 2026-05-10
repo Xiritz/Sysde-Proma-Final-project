@@ -174,4 +174,16 @@ public class TransactionService {
         }
         transactions.removeIf(t -> t.getTransactionId().equals(transactionId));
     }
+
+    public void updateTransaction(User requester, Transaction updatedTransaction) {
+        if (requester.getRole() != Role.ADMIN && requester.getRole() != Role.OWNER) {
+            throw new SecurityException("Only admins or owners can update transactions.");
+        }
+        for (int i = 0; i < transactions.size(); i++) {
+            if (transactions.get(i).getTransactionId().equals(updatedTransaction.getTransactionId())) {
+                transactions.set(i, updatedTransaction);
+                return;
+            }
+        }
+    }
 }

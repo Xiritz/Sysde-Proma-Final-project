@@ -71,27 +71,82 @@ public class CustomerController {
         addressLabel.setStyle("-fx-text-fill: -qmar-text-muted;");
         addressLabel.setWrapText(true);
 
-        javafx.scene.layout.HBox footer = new javafx.scene.layout.HBox();
+        javafx.scene.layout.HBox footer = new javafx.scene.layout.HBox(10);
         footer.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
 
         org.example.Model.User currentUser = App.loginService.getCurrentUser();
         if (currentUser != null && (currentUser.getRole() == org.example.Model.Role.ADMIN || currentUser.getRole() == org.example.Model.Role.OWNER)) {
+            Button editBtn = new Button("Edit");
+            editBtn.setStyle("-fx-background-color: #f0f9ff; -fx-text-fill: -qmar-primary; -fx-border-color: -qmar-primary; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
+            editBtn.setOnAction(e -> handleEdit(c));
+
             Button removeBtn = new Button("Remove");
             removeBtn.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: -qmar-danger; -fx-border-color: -qmar-danger; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
             removeBtn.setOnAction(e -> {
-                try {
-                    App.customerService.removeCustomer(currentUser, c.getCustomerId());
-                    refreshTable();
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Customer removed.");
-                } catch (Exception ex) {
-                    showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
-                }
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                confirm.setTitle("Confirm Removal");
+                confirm.setHeaderText("Remove Customer: " + c.getCustomerName());
+                confirm.setContentText("Are you sure you want to remove this customer and their history?");
+                
+                confirm.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.OK) {
+                        try {
+                            App.customerService.removeCustomer(currentUser, c.getCustomerId());
+                            refreshTable();
+                            showAlert(Alert.AlertType.INFORMATION, "Success", "Customer removed.");
+                        } catch (Exception ex) {
+                            showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+                        }
+                    }
+                });
             });
-            footer.getChildren().add(removeBtn);
+            footer.getChildren().addAll(editBtn, removeBtn);
         }
 
         card.getChildren().addAll(header, contactLabel, addressLabel, footer);
         return card;
+    }
+
+    private void handleEdit(Customer c) {
+        Dialog<Customer> dialog = new Dialog<>();
+        dialog.setTitle("Edit Customer");
+        dialog.setHeaderText("Update details for " + c.getCustomerName());
+
+        ButtonType updateButtonType = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(updateButtonType, ButtonType.CANCEL);
+
+        VBox grid = new VBox(10);
+        TextField name = new TextField(c.getCustomerName());
+        name.setPromptText("Full Name");
+        TextArea address = new TextArea(c.getAddress());
+        address.setPromptText("Address");
+        address.setPrefRowCount(3);
+        TextField contact = new TextField(c.getContactNumber());
+        contact.setPromptText("Contact Number");
+
+        grid.getChildren().addAll(new Label("Name:"), name, new Label("Address:"), address, new Label("Contact:"), contact);
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == updateButtonType) {
+                if (name.getText().trim().isEmpty() || address.getText().trim().isEmpty() || contact.getText().trim().isEmpty()) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "All fields are required.");
+                    return null;
+                }
+                return new Customer(c.getCustomerId(), name.getText(), address.getText(), contact.getText());
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(updatedCustomer -> {
+            try {
+                App.customerService.updateCustomer(App.loginService.getCurrentUser(), updatedCustomer);
+                refreshTable();
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Customer updated successfully!");
+            } catch (Exception ex) {
+                showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+            }
+        });
     }
 
 

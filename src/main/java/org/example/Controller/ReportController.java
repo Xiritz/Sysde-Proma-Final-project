@@ -80,27 +80,80 @@ public class ReportController {
         Label dateLabel = new Label("📅 " + e.getDateIncurred().toString().substring(0, 10));
         dateLabel.setStyle("-fx-text-fill: -qmar-text-muted; -fx-font-size: 12px;");
 
-        javafx.scene.layout.HBox footer = new javafx.scene.layout.HBox();
+        javafx.scene.layout.HBox footer = new javafx.scene.layout.HBox(10);
         footer.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
 
         org.example.Model.User currentUser = App.loginService.getCurrentUser();
         if (currentUser != null && (currentUser.getRole() == org.example.Model.Role.ADMIN || currentUser.getRole() == org.example.Model.Role.OWNER)) {
+            Button editBtn = new Button("Edit");
+            editBtn.setStyle("-fx-background-color: #f0f9ff; -fx-text-fill: -qmar-primary; -fx-border-color: -qmar-primary; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
+            editBtn.setOnAction(evt -> handleEdit(e));
+
             Button removeBtn = new Button("Remove");
             removeBtn.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: -qmar-danger; -fx-border-color: -qmar-danger; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
             removeBtn.setOnAction(evt -> {
-                try {
-                    App.expenseService.removeExpense(currentUser, e.getExpenseId());
-                    handleGenerateReport();
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Expense removed.");
-                } catch (Exception ex) {
-                    showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
-                }
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                confirm.setTitle("Confirm Deletion");
+                confirm.setHeaderText("Delete Expense: " + e.getExpenseName());
+                confirm.setContentText("Are you sure you want to permanently remove this expense record?");
+                
+                confirm.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.OK) {
+                        try {
+                            App.expenseService.removeExpense(currentUser, e.getExpenseId());
+                            handleGenerateReport();
+                            showAlert(Alert.AlertType.INFORMATION, "Success", "Expense removed.");
+                        } catch (Exception ex) {
+                            showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+                        }
+                    }
+                });
             });
-            footer.getChildren().add(removeBtn);
+            footer.getChildren().addAll(editBtn, removeBtn);
         }
 
         card.getChildren().addAll(header, dateLabel, footer);
         return card;
+    }
+
+    private void handleEdit(Expense e) {
+        Dialog<Expense> dialog = new Dialog<>();
+        dialog.setTitle("Edit Expense");
+        dialog.setHeaderText("Update details for " + e.getExpenseName());
+
+        ButtonType updateButtonType = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(updateButtonType, ButtonType.CANCEL);
+
+        VBox grid = new VBox(10);
+        TextField name = new TextField(e.getExpenseName());
+        name.setPromptText("Expense Name");
+        TextField cost = new TextField(String.valueOf(e.getCost()));
+        cost.setPromptText("Cost");
+
+        grid.getChildren().addAll(new Label("Name:"), name, new Label("Cost:"), cost);
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == updateButtonType) {
+                try {
+                    return new Expense(e.getExpenseId(), name.getText(), Double.parseDouble(cost.getText()), e.getDateIncurred());
+                } catch (NumberFormatException ex) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Cost must be a valid number.");
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(updatedExpense -> {
+            try {
+                App.expenseService.updateExpense(App.loginService.getCurrentUser(), updatedExpense);
+                handleGenerateReport();
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Expense updated successfully!");
+            } catch (Exception ex) {
+                showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+            }
+        });
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {

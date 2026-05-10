@@ -50,6 +50,18 @@ public class UserService {
         users.removeIf(u -> u.getUserId().equals(userId));
     }
 
+    public void updateUser(User requester, User updatedUser) {
+        if (requester.getRole() != Role.ADMIN && requester.getRole() != Role.OWNER) {
+            throw new SecurityException("Only admins or owners can update users.");
+        }
+        for (int i = 0; i < users.size(); i++) {
+            if (users.get(i).getUserId().equals(updatedUser.getUserId())) {
+                users.set(i, updatedUser);
+                return;
+            }
+        }
+    }
+
     public List<User> getAllUsers() {
         return new ArrayList<>(users);
     }

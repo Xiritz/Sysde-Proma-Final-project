@@ -39,8 +39,6 @@
                 
                 <Region HBox.hgrow="ALWAYS" />
                 
-                <TextField prefWidth="300.0" promptText="Search everything..." styleClass="search-bar" />
-                
                 <Region HBox.hgrow="ALWAYS" />
                 
                 <HBox alignment="CENTER_RIGHT" spacing="15.0">

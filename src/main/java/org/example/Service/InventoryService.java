@@ -76,6 +76,18 @@ public class InventoryService {
         inventoryItems.removeIf(i -> i.getItemId().equals(itemId));
     }
 
+    public void updateInventoryItem(org.example.Model.User requester, InventoryItem updatedItem) {
+        if (requester.getRole() != org.example.Model.Role.ADMIN && requester.getRole() != org.example.Model.Role.OWNER) {
+            throw new SecurityException("Only admins or owners can update inventory items.");
+        }
+        for (int i = 0; i < inventoryItems.size(); i++) {
+            if (inventoryItems.get(i).getItemId().equals(updatedItem.getItemId())) {
+                inventoryItems.set(i, updatedItem);
+                return;
+            }
+        }
+    }
+
     public void generateInventoryReport() {
         System.out.println("---------- INVENTORY REPORT ----------");
         for (InventoryItem item : inventoryItems) {

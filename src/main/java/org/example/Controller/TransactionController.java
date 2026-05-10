@@ -305,22 +305,97 @@ public class TransactionController {
 
         org.example.Model.User currentUser = App.loginService.getCurrentUser();
         if (currentUser != null && (currentUser.getRole() == org.example.Model.Role.ADMIN || currentUser.getRole() == org.example.Model.Role.OWNER)) {
+            Button editBtn = new Button("Edit");
+            editBtn.setStyle("-fx-background-color: #f0f9ff; -fx-text-fill: -qmar-primary; -fx-border-color: -qmar-primary; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
+            editBtn.setOnAction(e -> handleEdit(t));
+
             Button removeBtn = new Button("Remove");
             removeBtn.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: -qmar-danger; -fx-border-color: -qmar-danger; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
             removeBtn.setOnAction(e -> {
-                try {
-                    App.transactionService.removeTransaction(currentUser, t.getTransactionId());
-                    refreshData();
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Transaction removed.");
-                } catch (Exception ex) {
-                    showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
-                }
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                confirm.setTitle("Confirm Deletion");
+                confirm.setHeaderText("Delete Transaction: " + t.getTransactionId());
+                confirm.setContentText("Are you sure you want to permanently remove this transaction?");
+                
+                confirm.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.OK) {
+                        try {
+                            App.transactionService.removeTransaction(currentUser, t.getTransactionId());
+                            refreshData();
+                            showAlert(Alert.AlertType.INFORMATION, "Success", "Transaction removed.");
+                        } catch (Exception ex) {
+                            showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+                        }
+                    }
+                });
             });
-            removeFooter.getChildren().add(removeBtn);
+            removeFooter.getChildren().addAll(editBtn, removeBtn);
+            removeFooter.setSpacing(10);
         }
 
         card.getChildren().addAll(header, body, footer, creatorLabel, removeFooter);
         return card;
+    }
+
+    private void handleEdit(Transaction t) {
+        Dialog<Transaction> dialog = new Dialog<>();
+        dialog.setTitle("Edit Transaction");
+        dialog.setHeaderText("Update details for " + t.getTransactionId());
+
+        ButtonType updateButtonType = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(updateButtonType, ButtonType.CANCEL);
+
+        VBox grid = new VBox(10);
+        
+        ComboBox<Service> servBox = new ComboBox<>(FXCollections.observableArrayList(Service.values()));
+        servBox.setValue(t.getService());
+        
+        TextField weight = new TextField(String.valueOf(t.getWeightKg()));
+        TextField loads = new TextField(String.valueOf(t.getLoadCount()));
+        
+        grid.getChildren().addAll(
+            new Label("Service:"), servBox, 
+            new Label("Weight (kg):"), weight, 
+            new Label("Loads:"), loads
+        );
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == updateButtonType) {
+                try {
+                    Transaction updated = new Transaction(
+                        t.getTransactionId(), 
+                        t.getCustomer(), 
+                        servBox.getValue(), 
+                        t.getDatePlaced(), 
+                        Double.parseDouble(weight.getText()), 
+                        Integer.parseInt(loads.getText()), 
+                        t.getTotalCost(), 
+                        t.getAmountPaid(), 
+                        t.getOutstandingBalance(), 
+                        t.getLaundryStatus(), 
+                        t.getInitialPaymentMethod(), 
+                        t.getCreatedBy()
+                    );
+                    updated.calculateTotalCost(); // Re-calculate based on new loads/weight
+                    return updated;
+                } catch (Exception ex) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Invalid numeric input.");
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(updatedTrans -> {
+            try {
+                App.transactionService.updateTransaction(App.loginService.getCurrentUser(), updatedTrans);
+                refreshData();
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Transaction updated successfully!");
+            } catch (Exception ex) {
+                showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+            }
+        });
     }
 
     private void updatePaymentFieldState() {

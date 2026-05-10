@@ -30,7 +30,7 @@
                 <TextField fx:id="adjustmentQuantityField" promptText="Quantity" />
                 <HBox spacing="10.0">
                     <Button text="Restock" onAction="#handleRestock" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="primary-button" />
-                    <Button text="Consume" onAction="#handleConsume" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="logout-btn" />
+                    <Button text="Consume" onAction="#handleConsume" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="primary-button" />
                 </HBox>
             </VBox>
         </VBox>

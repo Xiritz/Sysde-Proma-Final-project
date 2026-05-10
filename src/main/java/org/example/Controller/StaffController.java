@@ -75,9 +75,13 @@ public class StaffController {
         Label idLabel = new Label("ID: " + u.getUserId());
         idLabel.setStyle("-fx-text-fill: -qmar-text-muted; -fx-font-size: 12px;");
 
-        javafx.scene.layout.HBox footer = new javafx.scene.layout.HBox();
+        javafx.scene.layout.HBox footer = new javafx.scene.layout.HBox(10);
         footer.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
         
+        Button editBtn = new Button("Edit");
+        editBtn.setStyle("-fx-background-color: #f0f9ff; -fx-text-fill: -qmar-primary; -fx-border-color: -qmar-primary; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
+        editBtn.setOnAction(e -> handleEdit(u));
+
         Button removeBtn = new Button("Remove");
         removeBtn.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: -qmar-danger; -fx-border-color: -qmar-danger; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
         
@@ -86,19 +90,76 @@ public class StaffController {
         }
 
         removeBtn.setOnAction(e -> {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Confirm Removal");
+            confirm.setHeaderText("Remove Staff Member: " + u.getUsername());
+            confirm.setContentText("Are you sure you want to remove this account?");
+            
+            confirm.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    try {
+                        App.userService.removeUser(App.loginService.getCurrentUser(), u.getUserId());
+                        refreshData();
+                        showAlert(Alert.AlertType.INFORMATION, "Success", "Staff member removed.");
+                    } catch (Exception ex) {
+                        showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+                    }
+                }
+            });
+        });
+
+        footer.getChildren().addAll(editBtn, removeBtn);
+
+        card.getChildren().addAll(header, idLabel, footer);
+        return card;
+    }
+
+    private void handleEdit(User u) {
+        User currentUser = App.loginService.getCurrentUser();
+        boolean isOwner = currentUser != null && currentUser.getRole() == Role.OWNER;
+
+        Dialog<User> dialog = new Dialog<>();
+        dialog.setTitle("Edit Staff");
+        dialog.setHeaderText("Update details for " + u.getUsername());
+
+        ButtonType updateButtonType = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(updateButtonType, ButtonType.CANCEL);
+
+        VBox grid = new VBox(10);
+        TextField username = new TextField(u.getUsername());
+        username.setPromptText("Username");
+        
+        grid.getChildren().addAll(new Label("Username:"), username);
+
+        PasswordField password = new PasswordField();
+        ComboBox<Role> role = new ComboBox<>(FXCollections.observableArrayList(Role.values()));
+
+        if (isOwner) {
+            password.setPromptText("New Password (leave blank to keep)");
+            role.setValue(u.getRole());
+            grid.getChildren().addAll(new Label("Password:"), password, new Label("Role:"), role);
+        }
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == updateButtonType) {
+                String pass = (isOwner && !password.getText().isEmpty()) ? password.getText() : u.getPassword();
+                Role r = isOwner ? role.getValue() : u.getRole();
+                return new User(u.getUserId(), username.getText(), pass, r);
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(updatedUser -> {
             try {
-                App.userService.removeUser(App.loginService.getCurrentUser(), u.getUserId());
+                App.userService.updateUser(App.loginService.getCurrentUser(), updatedUser);
                 refreshData();
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Staff member removed.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Staff updated successfully!");
             } catch (Exception ex) {
                 showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
             }
         });
-
-        footer.getChildren().add(removeBtn);
-
-        card.getChildren().addAll(header, idLabel, footer);
-        return card;
     }
 
     private void markFieldInvalid(Control field, boolean isInvalid) {

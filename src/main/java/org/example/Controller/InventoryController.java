@@ -119,22 +119,78 @@ public class InventoryController {
 
         org.example.Model.User currentUser = App.loginService.getCurrentUser();
         if (currentUser != null && (currentUser.getRole() == org.example.Model.Role.ADMIN || currentUser.getRole() == org.example.Model.Role.OWNER)) {
+            Button editBtn = new Button("Edit");
+            editBtn.setStyle("-fx-background-color: #f0f9ff; -fx-text-fill: -qmar-primary; -fx-border-color: -qmar-primary; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
+            editBtn.setOnAction(e -> handleEdit(item));
+
             Button removeBtn = new Button("Remove");
             removeBtn.setStyle("-fx-background-color: #fef2f2; -fx-text-fill: -qmar-danger; -fx-border-color: -qmar-danger; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
             removeBtn.setOnAction(e -> {
-                try {
-                    App.inventoryService.removeInventoryItem(currentUser, item.getItemId());
-                    refreshData();
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Item removed.");
-                } catch (Exception ex) {
-                    showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
-                }
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                confirm.setTitle("Confirm Removal");
+                confirm.setHeaderText("Remove Item: " + item.getItemName());
+                confirm.setContentText("Are you sure you want to permanently remove this item from inventory?");
+                
+                confirm.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.OK) {
+                        try {
+                            App.inventoryService.removeInventoryItem(currentUser, item.getItemId());
+                            refreshData();
+                            showAlert(Alert.AlertType.INFORMATION, "Success", "Item removed.");
+                        } catch (Exception ex) {
+                            showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+                        }
+                    }
+                });
             });
-            footer.getChildren().add(removeBtn);
+            footer.getChildren().addAll(editBtn, removeBtn);
+            footer.setSpacing(10);
         }
 
         card.getChildren().addAll(header, body, idLabel, footer);
         return card;
+    }
+
+    private void handleEdit(InventoryItem item) {
+        Dialog<InventoryItem> dialog = new Dialog<>();
+        dialog.setTitle("Edit Item");
+        dialog.setHeaderText("Update details for " + item.getItemName());
+
+        ButtonType updateButtonType = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(updateButtonType, ButtonType.CANCEL);
+
+        VBox grid = new VBox(10);
+        TextField name = new TextField(item.getItemName());
+        name.setPromptText("Item Name");
+        TextField stock = new TextField(String.valueOf(item.getCurrentStock()));
+        stock.setPromptText("Current Stock");
+        TextField threshold = new TextField(String.valueOf(item.getLowStockThreshold()));
+        threshold.setPromptText("Low Stock Threshold");
+
+        grid.getChildren().addAll(new Label("Name:"), name, new Label("Stock:"), stock, new Label("Threshold:"), threshold);
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == updateButtonType) {
+                try {
+                    return new InventoryItem(item.getItemId(), name.getText(), Integer.parseInt(stock.getText()), Integer.parseInt(threshold.getText()));
+                } catch (NumberFormatException e) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Stock and Threshold must be numbers.");
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(updatedItem -> {
+            try {
+                App.inventoryService.updateInventoryItem(App.loginService.getCurrentUser(), updatedItem);
+                refreshData();
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Item updated successfully!");
+            } catch (Exception ex) {
+                showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+            }
+        });
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {

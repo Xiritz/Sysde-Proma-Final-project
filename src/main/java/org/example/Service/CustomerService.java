@@ -32,7 +32,10 @@ public class CustomerService {
         return new ArrayList<>(customers);
     }
 
-    public void updateCustomer(Customer updatedCustomer) {
+    public void updateCustomer(org.example.Model.User requester, Customer updatedCustomer) {
+        if (requester.getRole() != org.example.Model.Role.ADMIN && requester.getRole() != org.example.Model.Role.OWNER) {
+            throw new SecurityException("Only admins or owners can update customers.");
+        }
         for (int i = 0; i < customers.size(); i++) {
             if (customers.get(i).getCustomerId().equals(updatedCustomer.getCustomerId())) {
                 customers.set(i, updatedCustomer);

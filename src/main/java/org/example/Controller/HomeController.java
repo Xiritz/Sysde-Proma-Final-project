@@ -50,9 +50,12 @@ public class HomeController {
                 .count();
         unpaidOrdersLabel.setText(String.valueOf(unpaidCount));
 
-        // Active Transactions (Only Pending and Processing)
+        // Active Transactions (Unpaid, Pending, Processing, Ready for Delivery)
         long activeCount = allTransactions.stream()
-                .filter(t -> t.getLaundryStatus() == Status.PENDING || t.getLaundryStatus() == Status.PROCESSING)
+                .filter(t -> t.getLaundryStatus() == Status.PENDING 
+                        || t.getLaundryStatus() == Status.PROCESSING 
+                        || t.getLaundryStatus() == Status.READY_FOR_DELIVERY 
+                        || t.getOutstandingBalance() > 0)
                 .count();
         activeOrdersLabel.setText(String.valueOf(activeCount));
 
@@ -72,9 +75,12 @@ public class HomeController {
             revenueTitle.setText("Restricted Access");
         }
 
-        // All Active Orders (Status is PENDING or PROCESSING - hasn't been "completed/ready" yet)
+        // All Active Orders (Unpaid, Pending, Processing, Ready for Delivery)
         List<Transaction> activeOrders = allTransactions.stream()
-                .filter(t -> t.getLaundryStatus() == Status.PENDING || t.getLaundryStatus() == Status.PROCESSING)
+                .filter(t -> t.getLaundryStatus() == Status.PENDING 
+                        || t.getLaundryStatus() == Status.PROCESSING 
+                        || t.getLaundryStatus() == Status.READY_FOR_DELIVERY 
+                        || t.getOutstandingBalance() > 0)
                 .sorted((t1, t2) -> {
                     if (t1.getDatePlaced() == null || t2.getDatePlaced() == null) return 0;
                     return t2.getDatePlaced().compareTo(t1.getDatePlaced());
@@ -119,6 +125,13 @@ public class HomeController {
         
         Label idLabel = new Label(t.getTransactionId());
         idLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: -qmar-primary;");
+        header.getChildren().add(idLabel);
+
+        if (t.getOutstandingBalance() > 0) {
+            Label unpaidBadge = new Label("UNPAID");
+            unpaidBadge.setStyle("-fx-background-color: -qmar-danger; -fx-text-fill: white; -fx-padding: 2 6; -fx-background-radius: 5; -fx-font-size: 9px; -fx-font-weight: bold;");
+            header.getChildren().add(unpaidBadge);
+        }
         
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -128,11 +141,14 @@ public class HomeController {
         switch (t.getLaundryStatus()) {
             case PENDING: statusBadge.getStyleClass().add("status-pending"); break;
             case PROCESSING: statusBadge.getStyleClass().add("status-processing"); break;
-            case READY_FOR_DELIVERY: statusBadge.getStyleClass().add("status-completed"); break;
+            case READY_FOR_DELIVERY: 
+            case DELIVERED:
+                statusBadge.getStyleClass().add("status-completed"); 
+                break;
             default: break;
         }
         
-        header.getChildren().addAll(idLabel, spacer, statusBadge);
+        header.getChildren().addAll(spacer, statusBadge);
 
         Label custLabel = new Label(t.getCustomer() != null ? t.getCustomer().getCustomerName() : "N/A");
         custLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: -qmar-text-main;");
