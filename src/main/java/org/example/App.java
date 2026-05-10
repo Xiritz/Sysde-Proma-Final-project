@@ -6,12 +6,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.example.Service.*;
+import org.example.Util.BackupScheduler;
 
 import java.io.IOException;
 
 public class App extends Application {
 
     private static Scene scene;
+    private static final BackupScheduler backupScheduler = new BackupScheduler();
     
     // Shared services
     public static final UserService userService = new UserService();
@@ -32,6 +34,14 @@ public class App extends Application {
         stage.setScene(scene);
         stage.setMaximized(true);
         stage.show();
+        
+        // Start auto-backup to Supabase
+        backupScheduler.startAutoBackup();
+    }
+
+    @Override
+    public void stop() {
+        backupScheduler.stop();
     }
 
     public static void setRoot(String fxml) throws IOException {
